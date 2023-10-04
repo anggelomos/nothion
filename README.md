@@ -25,7 +25,7 @@ client.get_active_tasks()
 - add_expense_log(title, amount, date)
 - get_incomplete_stats_dates(date)
 - update_stats_row(date: str, stats_data: StatsData)
-- get_data_between_dates(start_date: str, end_date: str)
+- get_stats_between_dates(start_date: str, end_date: str)
 
 
 ## Personal Stats model
@@ -39,3 +39,10 @@ TimeStats:
 - work_time: float
 - leisure_time: float
 - focus_time: float
+
+## Environment variables
+
+- NT_AUTH: Notion auth token
+- NT_TASKS_DB_ID: Notion tasks database id
+- NT_STATS_DB_ID: Notion stats database id
+- NT_EXPENSES_DB_ID: Notion expenses database id
