@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+repository = "https://github.com/anggelomos/nothion"
+
+[project]
+name = "tickthon"
+version = "0.0.1"
+description = "Yet another unofficial Notion API client"
+readme = "README.md"
+authors = [{name = "anggelomos", email = "anggelomos@outlook.com"}]
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "requests",
+    "attrs"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "twine",
+    "flake8",
+    "mypy",
+    "types-requests"
+]
