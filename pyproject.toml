@@ -5,8 +5,11 @@ build-backend = "setuptools.build_meta"
 [project.urls]
 repository = "https://github.com/anggelomos/nothion"
 
+[tool.setuptools.package-data]
+nothion = ["py.typed"]
+
 [project]
-name = "tickthon"
+name = "nothion"
 version = "0.0.1"
 description = "Yet another unofficial Notion API client"
 readme = "README.md"
@@ -16,6 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
+    "tickthon",
     "requests",
     "attrs"
 ]

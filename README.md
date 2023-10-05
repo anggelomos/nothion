@@ -42,7 +42,7 @@ TimeStats:
 
 ## Environment variables
 
-- NT_AUTH: Notion auth token
+- NT_AUTH: Notion auth token, for example secret_t1CdN9S8yicG5eWLUOfhcWaOscVnFXns.
 - NT_TASKS_DB_ID: Notion tasks database id
 - NT_STATS_DB_ID: Notion stats database id
 - NT_EXPENSES_DB_ID: Notion expenses database id
