@@ -15,6 +15,8 @@ class TasksHeaders(Enum):
     TAGS = "Tags"
     TICKTICK_ID = "Ticktick id"
     RECURRENT_ID = "Recurrent id"
+    PROJECT_ID = "Project id"
+    TIMEZONE = "Timezone"
 
 
 class StatsHeaders(Enum):

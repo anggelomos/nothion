@@ -19,7 +19,6 @@ TEST_TASK = Task(ticktick_id="60c8d7b1e9b80e0595353bc6",
                  project_id="5f30772022d478db3ad1a9c2",
                  timezone="America/Bogota",
                  due_date="2023-08-03",
-                 kanban_status="",
                  recurrent_id="o3k8772022d478db3ad1d94j"
                  )
 

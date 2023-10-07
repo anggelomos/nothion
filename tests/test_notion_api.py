@@ -38,7 +38,7 @@ def test_create_table_entry(notion_api, payload):
     # Test with tasks database
     (NT_TASKS_DB_ID,
      {"filter": {"and": [{"property": "Ticktick id", "rich_text": {"equals": "a7f9b3d2c8e60f1472065ac4"}}]}},
-     "id", "af5d4552-148e-4c98-a0b9-728226350dfd"),
+     "id", "f0889936-35c3-40cc-8e98-298ab93ed685"),
 
     # Test with stats database
     (NT_STATS_DB_ID,

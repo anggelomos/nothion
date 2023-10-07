@@ -10,22 +10,22 @@ pip install nothion
 ```python
 from nothion import NotionClient
 
-client = NotionClient(auth_secret)
+client = NotionClient()
 client.get_active_tasks()
 ```
 
 ## Features
 - get_active_tasks()
-- get_task_by_id(task_id)
-- get_notion_id(task_id)
-- is_task_already_created(task_id)
+- get_tasks_by_id(task_id)
+- get_task_notion_id(task_id)
+- is_task_already_created(ticktick_id, due_date)
 - create_task(Task)
-- update_task(task_id, Task)
+- update_task(Task)
 - delete_task(task_id)
-- add_expense_log(title, amount, date)
+- add_expense_log(ExpenseLog)
 - get_incomplete_stats_dates(date)
-- update_stats_row(date: str, stats_data: StatsData)
-- get_stats_between_dates(start_date: str, end_date: str)
+- update_stat(PersonalStats)
+- get_stats_between_dates(start_date, end_date)
 
 
 ## Personal Stats model
@@ -39,6 +39,14 @@ TimeStats:
 - work_time: float
 - leisure_time: float
 - focus_time: float
+
+## ExpenseLog model
+This packages uses a custom attrs model to store expense log data, it has the following attributes:
+
+ExpenseLog:
+- fecha: str
+- egresos: float
+- producto: str
 
 ## Environment variables
 
