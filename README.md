@@ -1,5 +1,5 @@
 # Nothion
-Yet another unofficial Notion API client
+Yet another unofficial Notion API client.
 
 ## Installation
 ```bash

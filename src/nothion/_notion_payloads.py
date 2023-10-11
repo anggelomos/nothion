@@ -2,11 +2,10 @@ import json
 import datetime
 from typing import Optional
 
-from tickthon import Task
+from tickthon import Task, ExpenseLog
 
 from ._config import NT_TASKS_DB_ID, NT_EXPENSES_DB_ID, NT_STATS_DB_ID
 from ._notion_table_headers import TasksHeaders, ExpensesHeaders, StatsHeaders
-from .expense_log_model import ExpenseLog
 from .personal_stats_model import PersonalStats
 
 
@@ -37,7 +36,7 @@ class NotionPayloads:
                 TasksHeaders.TAGS.value: {"multi_select": list(map(lambda tag: {"name": tag}, task.tags))},
                 TasksHeaders.TICKTICK_ID.value: {"rich_text": [{"text": {"content": task.ticktick_id}}]},
                 TasksHeaders.PROJECT_ID.value: {"rich_text": [{"text": {"content": task.project_id}}]},
-                TasksHeaders.RECURRENT_ID.value: {"rich_text": [{"text": {"content": task.recurrent_id}}]},
+                TasksHeaders.TICKTICK_ETAG.value: {"rich_text": [{"text": {"content": task.ticktick_etag}}]},
                 TasksHeaders.TIMEZONE.value: {"rich_text": [{"text": {"content": task.timezone}}]},
             }
         }
@@ -100,9 +99,9 @@ class NotionPayloads:
         payload = {
             "parent": {"database_id": NT_EXPENSES_DB_ID},
             "properties": {
-                ExpensesHeaders.PRODUCTO.value: {"title": [{"text": {"content": expense_log.producto}}]},
-                ExpensesHeaders.EGRESOS.value: {"number": expense_log.egresos},
-                ExpensesHeaders.FECHA.value: {"date": {"start": expense_log.fecha}}
+                ExpensesHeaders.PRODUCT.value: {"title": [{"text": {"content": expense_log.product}}]},
+                ExpensesHeaders.EXPENSE.value: {"number": expense_log.expense},
+                ExpensesHeaders.DATE.value: {"date": {"start": expense_log.date}}
             }
         }
 

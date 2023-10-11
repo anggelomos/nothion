@@ -5,10 +5,9 @@ from . import PersonalStats
 from ._config import NT_TASKS_DB_ID, NT_STATS_DB_ID
 from ._notion_payloads import NotionPayloads
 from ._notion_table_headers import TasksHeaders, StatsHeaders
-from tickthon import Task
+from tickthon import Task, ExpenseLog
 
 from ._notion_api import NotionAPI
-from .expense_log_model import ExpenseLog
 from .personal_stats_model import TimeStats
 
 
@@ -41,13 +40,11 @@ class NotionClient:
             if task_properties[TasksHeaders.PROJECT_ID.value]["rich_text"]:
                 project_id = task_properties[TasksHeaders.PROJECT_ID.value]["rich_text"][0]["plain_text"]
 
-            recurrent_id = ""
-            if task_properties[TasksHeaders.RECURRENT_ID.value]["rich_text"]:
-                recurrent_id = task_properties[TasksHeaders.RECURRENT_ID.value]["rich_text"][0]["plain_text"]
-
             parsed_tasks.append(Task(title=task_properties[TasksHeaders.TASK.value]["title"][0]["plain_text"],
                                      status=2 if task_properties[TasksHeaders.DONE.value]["checkbox"] else 0,
                                      ticktick_id=task_properties[TasksHeaders.TICKTICK_ID.value]
+                                     ["rich_text"][0]["plain_text"],
+                                     ticktick_etag=task_properties[TasksHeaders.TICKTICK_ETAG.value]
                                      ["rich_text"][0]["plain_text"],
                                      focus_time=task_properties[TasksHeaders.FOCUS_TIME.value]["number"],
                                      deleted=int(raw_task["archived"]),
@@ -55,8 +52,7 @@ class NotionClient:
                                      ["multi_select"]],
                                      project_id=project_id,
                                      timezone=timezone,
-                                     due_date=due_date,
-                                     recurrent_id=recurrent_id))
+                                     due_date=due_date))
 
         return parsed_tasks
 

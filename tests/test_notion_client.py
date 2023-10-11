@@ -5,11 +5,10 @@ from uuid import uuid4
 
 import pytest
 from nothion import NotionClient, PersonalStats
-from tickthon import Task
+from tickthon import Task, ExpenseLog
 
 from nothion._notion_payloads import NotionPayloads
 from nothion._notion_table_headers import ExpensesHeaders
-from nothion.expense_log_model import ExpenseLog
 from nothion.personal_stats_model import TimeStats
 
 
@@ -27,6 +26,7 @@ def test_get_active_tasks(notion_client):
 
 def test_get_task_by_id(notion_client):
     expected_task = Task(ticktick_id="hy76b3d2c8e60f1472064fte",
+                         ticktick_etag="9durj438",
                          status=2,
                          title="Test Existing Task Static",
                          focus_time=0.9,
@@ -35,7 +35,6 @@ def test_get_task_by_id(notion_client):
                          project_id="t542b6d8e9f2de3c5d6e7f8a9s2h",
                          timezone="America/Bogota",
                          due_date="9999-09-09",
-                         recurrent_id="1syb72a8cth8d65726re"
                          )
 
     task = notion_client.get_tasks_by_id("hy76b3d2c8e60f1472064fte")
@@ -46,6 +45,7 @@ def test_get_task_by_id(notion_client):
 
 def test_get_task_with_missing_properties(notion_client):
     expected_task = Task(ticktick_id="tg81h23oi12h3jkh2720fu321",
+                         ticktick_etag="d9iej37s",
                          status=2,
                          title="Test Existing Task With Missing Data",
                          )
@@ -80,6 +80,7 @@ def test_is_task_already_created(notion_client, task_id, expected_status):
 def test_create_task(notion_client):
     task_id = uuid4().hex
     expected_task = Task(ticktick_id=task_id,
+                         ticktick_etag="deletetk",
                          status=0,
                          title="Test Task to Delete",
                          focus_time=0.9,
@@ -87,7 +88,6 @@ def test_create_task(notion_client):
                          project_id="a123a4b5c6d7e8f9a0b1c2d3s4h",
                          timezone="America/Bogota",
                          due_date="9999-09-09",
-                         recurrent_id="r987f6e5d4c3b2a1098f7e6d5s3h"
                          )
 
     notion_client.create_task(expected_task)
@@ -102,6 +102,7 @@ def test_create_task(notion_client):
 
 def test_update_task(notion_client):
     expected_task = Task(ticktick_id="a7f9b3d2c8e60f1472065ac4",
+                         ticktick_etag="muu17zqq",
                          status=2,
                          title="Test Existing Task",
                          focus_time=random.random(),
@@ -109,7 +110,6 @@ def test_update_task(notion_client):
                          project_id="4a72b6d8e9f2103c5d6e7f8a9b0c",
                          timezone="America/Bogota",
                          due_date="9999-09-09",
-                         recurrent_id="3e4f72a8b9c01d6578901"
                          )
 
     original_task = notion_client.get_tasks_by_id("a7f9b3d2c8e60f1472065ac4")[0]
@@ -122,16 +122,16 @@ def test_update_task(notion_client):
 
 
 def test_add_expense_log(notion_client):
-    expected_expense_log = ExpenseLog(fecha="9999-09-09", egresos=99.9, producto="Test Expense Log")
+    expected_expense_log = ExpenseLog(date="9999-09-09", expense=99.9, product="Test Expense Log")
 
     expense_log = notion_client.add_expense_log(expected_expense_log)
 
     expense_log_entry = notion_client.notion_api.get_table_entry(expense_log["id"])
     expense_log_properties = expense_log_entry["properties"]
-    assert expense_log_properties[ExpensesHeaders.FECHA.value]["date"]["start"] == expected_expense_log.fecha
-    assert expense_log_properties[ExpensesHeaders.EGRESOS.value]["number"] == expected_expense_log.egresos
-    assert (expense_log_properties[ExpensesHeaders.PRODUCTO.value]["title"][0]["text"]["content"]
-            == expected_expense_log.producto)
+    assert expense_log_properties[ExpensesHeaders.DATE.value]["date"]["start"] == expected_expense_log.date
+    assert expense_log_properties[ExpensesHeaders.EXPENSE.value]["number"] == expected_expense_log.expense
+    assert (expense_log_properties[ExpensesHeaders.PRODUCT.value]["title"][0]["text"]["content"]
+            == expected_expense_log.product)
 
     notion_client.notion_api.update_table_entry(expense_log["id"], NotionPayloads.delete_table_entry())
 

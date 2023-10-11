@@ -2,9 +2,9 @@ from enum import Enum
 
 
 class ExpensesHeaders(Enum):
-    PRODUCTO = "producto"
-    EGRESOS = "egresos"
-    FECHA = "fecha"
+    PRODUCT = "product"
+    EXPENSE = "expense"
+    DATE = "date"
 
 
 class TasksHeaders(Enum):
@@ -14,7 +14,7 @@ class TasksHeaders(Enum):
     DUE_DATE = "Due date"
     TAGS = "Tags"
     TICKTICK_ID = "Ticktick id"
-    RECURRENT_ID = "Recurrent id"
+    TICKTICK_ETAG = "Ticktick etag"
     PROJECT_ID = "Project id"
     TIMEZONE = "Timezone"
 
