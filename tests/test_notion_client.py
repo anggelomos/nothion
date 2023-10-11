@@ -24,14 +24,14 @@ def test_get_active_tasks(notion_client):
     assert isinstance(active_tasks, List) and all(isinstance(i, Task) for i in active_tasks)
 
 
-def test_get_task_by_id(notion_client):
+def test_get_task_by_etag(notion_client):
     expected_task = Task(ticktick_id="hy76b3d2c8e60f1472064fte",
                          ticktick_etag="9durj438",
                          status=2,
                          title="Test Existing Task Static",
                          focus_time=0.9,
                          deleted=0,
-                         tags=["test", "existing"],
+                         tags=("test", "existing"),
                          project_id="t542b6d8e9f2de3c5d6e7f8a9s2h",
                          timezone="America/Bogota",
                          due_date="9999-09-09",
@@ -40,6 +40,12 @@ def test_get_task_by_id(notion_client):
     task = notion_client.get_task_by_etag("9durj438")
 
     assert task == expected_task
+
+
+def test_get_task_that_does_not_exist(notion_client):
+    task = notion_client.get_task_by_etag("0testdoesntexisttask0")
+
+    assert task is None
 
 
 def test_get_task_with_missing_properties(notion_client):
@@ -82,7 +88,7 @@ def test_create_task(notion_client):
                          status=0,
                          title="Test Task to Delete",
                          focus_time=0.9,
-                         tags=["test", "existing", "delete"],
+                         tags=("test", "existing", "delete"),
                          project_id="a123a4b5c6d7e8f9a0b1c2d3s4h",
                          timezone="America/Bogota",
                          due_date="9999-09-09",
@@ -104,7 +110,7 @@ def test_complete_task(notion_client):
                          status=0,
                          title="Test Task to Complete",
                          focus_time=0.9,
-                         tags=["test", "existing", "complete"],
+                         tags=("test", "existing", "complete"),
                          project_id="f9ri34b5c6f7rh29a0b1f9eo2ln",
                          timezone="America/Bogota",
                          due_date="9999-09-09",
@@ -126,7 +132,7 @@ def test_update_task(notion_client):
                          status=2,
                          title="Test Existing Task",
                          focus_time=random.random(),
-                         tags=["test", "existing"],
+                         tags=("test", "existing"),
                          project_id="4a72b6d8e9f2103c5d6e7f8a9b0c",
                          timezone="America/Bogota",
                          due_date="9999-09-09",

@@ -16,7 +16,7 @@ client.get_active_tasks()
 
 ## Features
 - get_active_tasks()
-- get_tasks_by_id(task_id)
+- get_task_by_etag(task_etag)
 - get_task_notion_id(task_id)
 - is_task_already_created(ticktick_id, due_date)
 - create_task(Task)

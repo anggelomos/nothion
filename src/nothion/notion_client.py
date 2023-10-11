@@ -48,8 +48,8 @@ class NotionClient:
                                      ["rich_text"][0]["plain_text"],
                                      focus_time=task_properties[TasksHeaders.FOCUS_TIME.value]["number"],
                                      deleted=int(raw_task["archived"]),
-                                     tags=[tag["name"] for tag in task_properties[TasksHeaders.TAGS.value]
-                                     ["multi_select"]],
+                                     tags=tuple([tag["name"] for tag in task_properties[TasksHeaders.TAGS.value]
+                                                                                       ["multi_select"]]),
                                      project_id=project_id,
                                      timezone=timezone,
                                      due_date=due_date))
@@ -66,13 +66,15 @@ class NotionClient:
         self.active_tasks = notion_tasks
         return notion_tasks
 
-    def get_task_by_etag(self, ticktick_etag: str) -> Task:
+    def get_task_by_etag(self, ticktick_etag: str) -> Optional[Task]:
         """Gets the task from Notion that have the given ticktick etag."""
         payload = NotionPayloads.get_task_by_etag(ticktick_etag)
         raw_tasks = self.notion_api.query_table(NT_TASKS_DB_ID, payload)
 
         notion_tasks = self._parse_notion_tasks(raw_tasks)
-        return notion_tasks[0]
+        if notion_tasks:
+            return notion_tasks[0]
+        return None
 
     def delete_task(self, task: Task):
         """Deletes a task from Notion."""
