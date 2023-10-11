@@ -56,6 +56,11 @@ class NotionPayloads:
     def update_task(cls, task: Task) -> str:
         return json.dumps(cls._base_task_payload(task))
 
+    @classmethod
+    def complete_task(cls) -> str:
+        payload = {"properties": {TasksHeaders.DONE.value: {"checkbox": True}}}
+        return json.dumps(payload)
+
     @staticmethod
     def delete_table_entry() -> str:
         payload = {"archived": True}
@@ -63,20 +68,16 @@ class NotionPayloads:
         return json.dumps(payload)
 
     @staticmethod
-    def get_task_by_id(task_id: str, due_date: str = "") -> dict:
+    def get_task_by_etag(task_etag: str) -> dict:
         """Payload to get a task by its ticktick id.
 
         Args:
-            task_id: The ticktick id of the task. For example: 6f8a2b3c4d5e1f09a7b6c8d9e0f2
-            due_date: The due date of the task in format YYYY-MM-DD.
+            task_etag: The ticktick id of the task. For example: 6f8a2b3c4d5e1f09a7b6c8d9e0f2
         """
-        filters = [{"property": TasksHeaders.TICKTICK_ID.value, "rich_text": {"equals": task_id}}]
-
-        if due_date:
-            filters.append({"property": TasksHeaders.DUE_DATE.value, "date": {"equals": due_date}})
-
         payload = {"sorts": [{"property": TasksHeaders.DUE_DATE.value, "direction": "ascending"}],
-                   "filter": {"and": filters}}
+                   "filter": {
+                       "and": [{"property": TasksHeaders.TICKTICK_ETAG.value, "rich_text": {"equals": task_etag}}]}
+                   }
 
         return payload
 

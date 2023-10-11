@@ -37,10 +37,9 @@ def test_get_task_by_id(notion_client):
                          due_date="9999-09-09",
                          )
 
-    task = notion_client.get_tasks_by_id("hy76b3d2c8e60f1472064fte")
+    task = notion_client.get_task_by_etag("9durj438")
 
-    assert len(task) == 1
-    assert task[0] == expected_task
+    assert task == expected_task
 
 
 def test_get_task_with_missing_properties(notion_client):
@@ -50,29 +49,28 @@ def test_get_task_with_missing_properties(notion_client):
                          title="Test Existing Task With Missing Data",
                          )
 
-    task = notion_client.get_tasks_by_id("tg81h23oi12h3jkh2720fu321")
+    task = notion_client.get_task_by_etag("d9iej37s")
 
-    assert len(task) == 1
-    assert task[0] == expected_task
+    assert task == expected_task
 
 
 def test_get_notion_id(notion_client):
     expected_notion_id = "f088993635c340cc8e98298ab93ed685"
 
-    notion_id = notion_client.get_task_notion_id("a7f9b3d2c8e60f1472065ac4")
+    notion_id = notion_client.get_task_notion_id("muu17zqq")
 
     assert notion_id == expected_notion_id
 
 
-@pytest.mark.parametrize("task_id, expected_status", [
+@pytest.mark.parametrize("task_etag, expected_status", [
     # Test with a test task
-    ("a7f9b3d2c8e60f1472065ac4", True),
+    ("muu17zqq", True),
 
     # Test with a task that does not exist
-    ("0testtaskthatdoesntexist0", False),
+    ("0testtask0", False),
 ])
-def test_is_task_already_created(notion_client, task_id, expected_status):
-    is_task_created = notion_client.is_task_already_created(task_id)
+def test_is_task_already_created(notion_client, task_etag, expected_status):
+    is_task_created = notion_client.is_task_already_created(Task(ticktick_etag=task_etag, title="", ticktick_id=""))
 
     assert is_task_created == expected_status
 
@@ -92,12 +90,34 @@ def test_create_task(notion_client):
 
     notion_client.create_task(expected_task)
 
-    task = notion_client.get_tasks_by_id(task_id)
-    assert len(task) == 1
-    assert task[0] == expected_task
+    task = notion_client.get_task_by_etag("deletetk")
+    assert task == expected_task
 
-    notion_client.delete_task(task_id)
-    assert notion_client.is_task_already_created(task_id) is False
+    notion_client.delete_task(expected_task)
+    assert notion_client.is_task_already_created(expected_task) is False
+
+
+def test_complete_task(notion_client):
+    task_id = uuid4().hex
+    expected_task = Task(ticktick_id=task_id,
+                         ticktick_etag="complete",
+                         status=0,
+                         title="Test Task to Complete",
+                         focus_time=0.9,
+                         tags=["test", "existing", "complete"],
+                         project_id="f9ri34b5c6f7rh29a0b1f9eo2ln",
+                         timezone="America/Bogota",
+                         due_date="9999-09-09",
+                         )
+
+    notion_client.create_task(expected_task)
+    notion_client.complete_task(expected_task)
+
+    task = notion_client.get_task_by_etag(expected_task.ticktick_etag)
+    assert task.status == 2
+
+    notion_client.delete_task(expected_task)
+    assert notion_client.is_task_already_created(expected_task) is False
 
 
 def test_update_task(notion_client):
@@ -112,9 +132,9 @@ def test_update_task(notion_client):
                          due_date="9999-09-09",
                          )
 
-    original_task = notion_client.get_tasks_by_id("a7f9b3d2c8e60f1472065ac4")[0]
+    original_task = notion_client.get_task_by_etag("muu17zqq")
     notion_client.update_task(expected_task)
-    updated_task = notion_client.get_tasks_by_id("a7f9b3d2c8e60f1472065ac4")[0]
+    updated_task = notion_client.get_task_by_etag("muu17zqq")
 
     assert updated_task == expected_task
     assert updated_task.title == original_task.title
