@@ -12,6 +12,7 @@ class TasksHeaders(Enum):
     TASK = "Task"
     FOCUS_TIME = "Focus time"
     DUE_DATE = "Due date"
+    CREATED_DATE = "Created date"
     TAGS = "Tags"
     TICKTICK_ID = "Ticktick id"
     TICKTICK_ETAG = "Ticktick etag"

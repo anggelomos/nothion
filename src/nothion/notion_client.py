@@ -36,6 +36,10 @@ class NotionClient:
             if task_properties[TasksHeaders.DUE_DATE.value]["date"]:
                 due_date = task_properties[TasksHeaders.DUE_DATE.value]["date"]["start"]
 
+            created_date = ""
+            if task_properties[TasksHeaders.CREATED_DATE.value]["date"]:
+                created_date = task_properties[TasksHeaders.CREATED_DATE.value]["date"]["start"]
+
             project_id = ""
             if task_properties[TasksHeaders.PROJECT_ID.value]["rich_text"]:
                 project_id = task_properties[TasksHeaders.PROJECT_ID.value]["rich_text"][0]["plain_text"]
@@ -46,6 +50,7 @@ class NotionClient:
                                      ["rich_text"][0]["plain_text"],
                                      ticktick_etag=task_properties[TasksHeaders.TICKTICK_ETAG.value]
                                      ["rich_text"][0]["plain_text"],
+                                     created_date=created_date,
                                      focus_time=task_properties[TasksHeaders.FOCUS_TIME.value]["number"],
                                      deleted=int(raw_task["archived"]),
                                      tags=tuple([tag["name"] for tag in task_properties[TasksHeaders.TAGS.value]

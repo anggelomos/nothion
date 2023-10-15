@@ -11,11 +11,12 @@ EXISTING_TEST_EXPENSE_LOG_PAGE_ID = "36de61f8b24c49e286bb5b0aca9740ab"
 
 TEST_TASK = Task(ticktick_id="60c8d7b1e9b80e0595353bc6",
                  ticktick_etag="m18s6cgr",
+                 created_date="2023-08-03",
                  status=0,
                  title="Test tasks",
                  focus_time=0.1,
                  deleted=0,
-                 tags=["test", "unit"],
+                 tags=("test", "unit"),
                  project_id="5f30772022d478db3ad1a9c2",
                  timezone="America/Bogota",
                  due_date="2023-08-03",

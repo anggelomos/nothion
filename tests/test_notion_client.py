@@ -27,6 +27,7 @@ def test_get_active_tasks(notion_client):
 def test_get_task_by_etag(notion_client):
     expected_task = Task(ticktick_id="hy76b3d2c8e60f1472064fte",
                          ticktick_etag="9durj438",
+                         created_date="9999-09-09",
                          status=2,
                          title="Test Existing Task Static",
                          focus_time=0.9,
@@ -51,6 +52,7 @@ def test_get_task_that_does_not_exist(notion_client):
 def test_get_task_with_missing_properties(notion_client):
     expected_task = Task(ticktick_id="tg81h23oi12h3jkh2720fu321",
                          ticktick_etag="d9iej37s",
+                         created_date="2099-09-09",
                          status=2,
                          title="Test Existing Task With Missing Data",
                          )
@@ -76,7 +78,8 @@ def test_get_notion_id(notion_client):
     ("0testtask0", False),
 ])
 def test_is_task_already_created(notion_client, task_etag, expected_status):
-    is_task_created = notion_client.is_task_already_created(Task(ticktick_etag=task_etag, title="", ticktick_id=""))
+    is_task_created = notion_client.is_task_already_created(Task(ticktick_etag=task_etag, created_date="", title="",
+                                                                 ticktick_id=""))
 
     assert is_task_created == expected_status
 
@@ -85,6 +88,7 @@ def test_create_task(notion_client):
     task_id = uuid4().hex
     expected_task = Task(ticktick_id=task_id,
                          ticktick_etag="deletetk",
+                         created_date="9999-09-09",
                          status=0,
                          title="Test Task to Delete",
                          focus_time=0.9,
@@ -107,6 +111,7 @@ def test_complete_task(notion_client):
     task_id = uuid4().hex
     expected_task = Task(ticktick_id=task_id,
                          ticktick_etag="complete",
+                         created_date="9999-09-09",
                          status=0,
                          title="Test Task to Complete",
                          focus_time=0.9,
@@ -129,6 +134,7 @@ def test_complete_task(notion_client):
 def test_update_task(notion_client):
     expected_task = Task(ticktick_id="a7f9b3d2c8e60f1472065ac4",
                          ticktick_etag="muu17zqq",
+                         created_date="9999-09-09",
                          status=2,
                          title="Test Existing Task",
                          focus_time=random.random(),
