@@ -88,9 +88,9 @@ class NotionPayloads:
             "parent": {"database_id": NT_STATS_DB_ID},
             "properties": {
                 StatsHeaders.DATE.value: {"date": {"start": personal_stats.date}},
-                StatsHeaders.WORK_TIME.value: {"number": personal_stats.time_stats.work_time},
-                StatsHeaders.LEISURE_TIME.value: {"number": personal_stats.time_stats.leisure_time},
-                StatsHeaders.FOCUS_TIME.value: {"number": personal_stats.time_stats.focus_time},
+                StatsHeaders.WORK_TIME.value: {"number": personal_stats.work_time},
+                StatsHeaders.LEISURE_TIME.value: {"number": personal_stats.leisure_time},
+                StatsHeaders.FOCUS_TIME.value: {"number": personal_stats.focus_time},
             }
         }
 
@@ -137,9 +137,9 @@ class NotionPayloads:
             "properties": {
                 StatsHeaders.DATE.value: {"date": {"start": stat.date}},
                 StatsHeaders.WEIGHT.value: {"number": stat.weight},
-                StatsHeaders.WORK_TIME.value: {"number": stat.time_stats.work_time},
-                StatsHeaders.LEISURE_TIME.value: {"number": stat.time_stats.leisure_time},
-                StatsHeaders.FOCUS_TIME.value: {"number": stat.time_stats.focus_time},
+                StatsHeaders.WORK_TIME.value: {"number": stat.work_time},
+                StatsHeaders.LEISURE_TIME.value: {"number": stat.leisure_time},
+                StatsHeaders.FOCUS_TIME.value: {"number": stat.focus_time},
             }
         }
 

@@ -9,7 +9,6 @@ from tickthon import Task, ExpenseLog
 
 from nothion._notion_payloads import NotionPayloads
 from nothion._notion_table_headers import ExpensesHeaders
-from nothion.personal_stats_model import TimeStats
 
 
 @pytest.fixture(scope="module")
@@ -182,9 +181,9 @@ def test_update_stats_row(notion_client):
     notion_api = notion_client.notion_api
     expected_stat = PersonalStats(date="1999-09-09",
                                   weight=0,
-                                  time_stats=TimeStats(work_time=99.9,
-                                                       leisure_time=99.9,
-                                                       focus_time=random.random()))
+                                  work_time=99.9,
+                                  leisure_time=99.9,
+                                  focus_time=random.random())
 
     original_stat = notion_client._parse_stats_rows(notion_api.get_table_entry("c568738e82a24b258071e5412db89a2f"))[0]
     notion_client.update_stat(expected_stat)
@@ -192,22 +191,19 @@ def test_update_stats_row(notion_client):
 
     assert updated_stat == expected_stat
     assert updated_stat.date == original_stat.date
-    assert updated_stat.time_stats.focus_time != original_stat.time_stats.focus_time
+    assert updated_stat.focus_time != original_stat.focus_time
 
 
 @pytest.mark.parametrize("start_date, end_date, expected_stats", [
     # Test start date before end date
     (date(2023, 1, 1), date(2023, 1, 3),
-     [PersonalStats(date='2023-01-01', time_stats=TimeStats(work_time=2.03, leisure_time=6.5, focus_time=0), weight=0),
-      PersonalStats(date='2023-01-02', time_stats=TimeStats(work_time=3.24, leisure_time=3.24, focus_time=3.12),
-                    weight=0),
-      PersonalStats(date='2023-01-03', time_stats=TimeStats(work_time=7.52, leisure_time=1.52, focus_time=6.33),
-                    weight=0)]),
+     [PersonalStats(date='2023-01-01', work_time=2.03, leisure_time=6.5, focus_time=0, weight=0),
+      PersonalStats(date='2023-01-02', work_time=3.24, leisure_time=3.24, focus_time=3.12, weight=0),
+      PersonalStats(date='2023-01-03', work_time=7.52, leisure_time=1.52, focus_time=6.33, weight=0)]),
 
     # Test start date equal to end date
     (date(2023, 1, 1), date(2023, 1, 1),
-     [PersonalStats(date='2023-01-01', time_stats=TimeStats(work_time=2.03, leisure_time=6.5, focus_time=0),
-                    weight=0)]),
+     [PersonalStats(date='2023-01-01', work_time=2.03, leisure_time=6.5, focus_time=0, weight=0)]),
 
     # Test start date after end date
     (date(2023, 1, 3), date(2023, 1, 1), []),

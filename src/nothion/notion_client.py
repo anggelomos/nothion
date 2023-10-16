@@ -8,7 +8,6 @@ from ._notion_table_headers import TasksHeaders, StatsHeaders
 from tickthon import Task, ExpenseLog
 
 from ._notion_api import NotionAPI
-from .personal_stats_model import TimeStats
 
 
 class NotionClient:
@@ -145,13 +144,12 @@ class NotionClient:
         rows_parsed = []
         for row in rows:
             row_properties = row["properties"]
-            time_stats = TimeStats(work_time=row_properties[StatsHeaders.WORK_TIME.value]["number"] or 0,
-                                   leisure_time=row_properties[StatsHeaders.LEISURE_TIME.value]["number"] or 0,
-                                   focus_time=row_properties[StatsHeaders.FOCUS_TIME.value]["number"] or 0)
-
             rows_parsed.append(PersonalStats(date=row_properties[StatsHeaders.DATE.value]["date"]["start"],
                                              weight=row_properties[StatsHeaders.WEIGHT.value]["number"] or 0,
-                                             time_stats=time_stats))
+                                             work_time=row_properties[StatsHeaders.WORK_TIME.value]["number"] or 0,
+                                             leisure_time=row_properties[StatsHeaders.LEISURE_TIME.value]
+                                                                        ["number"] or 0,
+                                             focus_time=row_properties[StatsHeaders.FOCUS_TIME.value]["number"] or 0))
         return rows_parsed
 
     def _get_last_checked(self) -> Optional[PersonalStats]:

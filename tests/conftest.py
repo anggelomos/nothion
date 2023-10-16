@@ -3,7 +3,6 @@ from tickthon import Task, ExpenseLog
 
 from nothion import PersonalStats
 from nothion._config import NT_AUTH
-from nothion.personal_stats_model import TimeStats
 
 EXISTING_TEST_TASK_PAGE_ID = "f088993635c340cc8e98298ab93ed685"
 EXISTING_TEST_STAT_PAGE_ID = "c568738e82a24b258071e5412db89a2f"
@@ -23,7 +22,9 @@ TEST_TASK = Task(ticktick_id="60c8d7b1e9b80e0595353bc6",
                  )
 
 TEST_STAT = PersonalStats(date="9999-09-09",
-                          time_stats=TimeStats(work_time=1.0, leisure_time=2.0, focus_time=3.0),
+                          work_time=1.0,
+                          leisure_time=2.0,
+                          focus_time=3.0,
                           weight=0.0)
 
 TEST_EXPENSE_LOG = ExpenseLog(date="9999-09-09", expense=999.9, product="Test product")
