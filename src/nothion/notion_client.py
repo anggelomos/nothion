@@ -70,9 +70,9 @@ class NotionClient:
         self.active_tasks = notion_tasks
         return notion_tasks
 
-    def get_task_by_etag(self, ticktick_etag: str) -> Optional[Task]:
+    def get_notion_task(self, ticktick_task: Task) -> Optional[Task]:
         """Gets the task from Notion that have the given ticktick etag."""
-        payload = NotionPayloads.get_task_by_etag(ticktick_etag)
+        payload = NotionPayloads.get_notion_task(ticktick_task)
         raw_tasks = self.notion_api.query_table(NT_TASKS_DB_ID, payload)
 
         notion_tasks = self._parse_notion_tasks(raw_tasks)
@@ -82,7 +82,7 @@ class NotionClient:
 
     def delete_task(self, task: Task):
         """Deletes a task from Notion."""
-        task_payload = NotionPayloads.get_task_by_etag(task.ticktick_etag)
+        task_payload = NotionPayloads.get_notion_task(task)
         raw_tasks = self.notion_api.query_table(NT_TASKS_DB_ID, task_payload)
 
         delete_payload = NotionPayloads.delete_table_entry()
@@ -90,16 +90,16 @@ class NotionClient:
             page_id = raw_task["id"]
             self.notion_api.update_table_entry(page_id, delete_payload)
 
-    def get_task_notion_id(self, ticktick_etag: str) -> str:
+    def get_task_notion_id(self, ticktick_task: Task) -> str:
         """Gets the Notion ID of a task."""
-        payload = NotionPayloads.get_task_by_etag(ticktick_etag)
+        payload = NotionPayloads.get_notion_task(ticktick_task)
         raw_tasks = self.notion_api.query_table(NT_TASKS_DB_ID, payload)
 
         return raw_tasks[0]["id"].replace("-", "")
 
     def is_task_already_created(self, task: Task) -> bool:
         """Checks if a task is already created in Notion."""
-        payload = NotionPayloads.get_task_by_etag(task.ticktick_etag)
+        payload = NotionPayloads.get_notion_task(task)
         raw_tasks = self.notion_api.query_table(NT_TASKS_DB_ID, payload)
         return len(raw_tasks) > 0
 
@@ -121,12 +121,12 @@ class NotionClient:
 
     def update_task(self, task: Task):
         """Updates a task in Notion."""
-        page_id = self.get_task_notion_id(task.ticktick_etag)
+        page_id = self.get_task_notion_id(task)
         payload = NotionPayloads.update_task(task)
         self.notion_api.update_table_entry(page_id, payload)
 
     def complete_task(self, task: Task):
-        page_id = self.get_task_notion_id(task.ticktick_etag)
+        page_id = self.get_task_notion_id(task)
         payload = NotionPayloads.complete_task()
         self.notion_api.update_table_entry(page_id, payload)
 

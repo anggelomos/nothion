@@ -69,15 +69,21 @@ class NotionPayloads:
         return json.dumps(payload)
 
     @staticmethod
-    def get_task_by_etag(task_etag: str) -> dict:
-        """Payload to get a task by its ticktick id.
+    def get_notion_task(task: Task) -> dict:
+        """Payload to get a notion task by its ticktick id or etag.
 
         Args:
-            task_etag: The ticktick id of the task. For example: 6f8a2b3c4d5e1f09a7b6c8d9e0f2
+            task: The task to search for.
         """
+        ticktick_etag = task.ticktick_etag if task.ticktick_etag else "no-etag-found"
+        ticktick_id = task.ticktick_id if task.ticktick_id else "no-ticktick-id-found"
         payload = {"sorts": [{"property": TasksHeaders.DUE_DATE.value, "direction": "ascending"}],
                    "filter": {
-                       "and": [{"property": TasksHeaders.TICKTICK_ETAG.value, "rich_text": {"equals": task_etag}}]}
+                       "or": [{"property": TasksHeaders.TICKTICK_ETAG.value,
+                               "rich_text": {"equals": ticktick_etag}},
+                              {"property": TasksHeaders.TICKTICK_ID.value,
+                               "rich_text": {"equals": ticktick_id}}
+                              ]}
                    }
 
         return payload
