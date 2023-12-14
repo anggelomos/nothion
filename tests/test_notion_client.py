@@ -23,7 +23,7 @@ def test_get_active_tasks(notion_client):
     assert isinstance(active_tasks, List) and all(isinstance(i, Task) for i in active_tasks)
 
 
-def test_get_task_by_etag(notion_client):
+def test_get_notion_task(notion_client):
     expected_task = Task(ticktick_id="hy76b3d2c8e60f1472064fte",
                          ticktick_etag="9durj438",
                          created_date="9999-09-09",
@@ -170,6 +170,75 @@ def test_update_task(notion_client):
     original_task = notion_client.get_notion_task(expected_task)
     notion_client.update_task(expected_task)
     updated_task = notion_client.get_notion_task(expected_task)
+
+    assert updated_task == expected_task
+    assert updated_task.title == original_task.title
+    assert updated_task.focus_time != original_task.focus_time
+
+
+def test_create_task_note(notion_client):
+    task_id = uuid4().hex
+    expected_task = Task(ticktick_id=task_id,
+                         ticktick_etag="created-task-note-to-delete",
+                         created_date="9999-09-09",
+                         status=0,
+                         title="Test Task Note to Delete",
+                         focus_time=0.9,
+                         tags=("test", "existing", "delete", "unprocessed"),
+                         project_id="a123a4b5c6d7e8f9a0b1c2d3s4h",
+                         timezone="America/Bogota",
+                         due_date="9999-09-09",
+                         )
+
+    notion_client.create_task_note(expected_task)
+
+    task = notion_client.get_notion_task_note(expected_task)
+    assert task == expected_task
+
+    notion_client.delete_task_note(expected_task)
+    assert notion_client.is_task_note_already_created(expected_task) is False
+
+
+def test_complete_task_note(notion_client):
+    task_id = uuid4().hex
+    expected_task = Task(ticktick_id=task_id,
+                         ticktick_etag="complete",
+                         created_date="9999-09-09",
+                         status=0,
+                         title="Test Task to Complete",
+                         focus_time=0.9,
+                         tags=("test", "existing", "complete"),
+                         project_id="f9ri34b5c6f7rh29a0b1f9eo2ln",
+                         timezone="America/Bogota",
+                         due_date="9999-09-09",
+                         )
+
+    notion_client.create_task_note(expected_task)
+    notion_client.complete_task_note(expected_task)
+
+    task = notion_client.get_notion_task_note(expected_task)
+    assert task.status == 2
+
+    notion_client.delete_task_note(expected_task)
+    assert notion_client.is_task_note_already_created(expected_task) is False
+
+
+def test_update_task_note(notion_client):
+    expected_task = Task(ticktick_id="a7f9b3d2c8e60f1472065ac4",
+                         ticktick_etag="muu17zqq",
+                         created_date="9999-09-09",
+                         status=2,
+                         title="Test Existing Task",
+                         focus_time=random.random(),
+                         tags=("test", "existing"),
+                         project_id="4a72b6d8e9f2103c5d6e7f8a9b0c",
+                         timezone="America/Bogota",
+                         due_date="9999-09-09",
+                         )
+
+    original_task = notion_client.get_notion_task_note(expected_task)
+    notion_client.update_task_note(expected_task)
+    updated_task = notion_client.get_notion_task_note(expected_task)
 
     assert updated_task == expected_task
     assert updated_task.title == original_task.title

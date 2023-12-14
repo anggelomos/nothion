@@ -13,6 +13,7 @@ on: [push, workflow_dispatch]
 env:
   NT_AUTH: ${{ secrets.NT_AUTH }}
   NT_TASKS_DB_ID: ${{ secrets.NT_TASKS_DB_ID }}
+  NT_NOTES_DB_ID: ${{ secrets.NT_NOTES_DB_ID }}
   NT_STATS_DB_ID: ${{ secrets.NT_STATS_DB_ID }}
   NT_EXPENSES_DB_ID: ${{ secrets.NT_EXPENSES_DB_ID }}
 

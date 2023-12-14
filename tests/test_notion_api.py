@@ -3,12 +3,12 @@ import random
 from typing import List, Dict
 
 import pytest
-from nothion._config import NT_TASKS_DB_ID, NT_STATS_DB_ID, NT_EXPENSES_DB_ID
+from nothion._config import NT_TASKS_DB_ID, NT_NOTES_DB_ID, NT_STATS_DB_ID, NT_EXPENSES_DB_ID
 
 from nothion._notion_api import NotionAPI
 from nothion._notion_payloads import NotionPayloads
-from .conftest import TEST_TASK, TEST_STAT, TEST_EXPENSE_LOG, EXISTING_TEST_TASK_PAGE_ID, EXISTING_TEST_STAT_PAGE_ID, \
-    EXISTING_TEST_EXPENSE_LOG_PAGE_ID
+from .conftest import (TEST_TASK, TEST_STAT, TEST_EXPENSE_LOG, EXISTING_TEST_TASK_PAGE_ID,
+                       EXISTING_TEST_TASK_NOTE_PAGE_ID,  EXISTING_TEST_STAT_PAGE_ID, EXISTING_TEST_EXPENSE_LOG_PAGE_ID)
 
 
 @pytest.fixture(scope="module")
@@ -19,6 +19,9 @@ def notion_api(notion_info):
 @pytest.mark.parametrize("payload", [
     # Test with tasks database
     (NotionPayloads.create_task(TEST_TASK)),
+
+    # Test with notes database
+    (NotionPayloads.create_task_note(TEST_TASK)),
 
     # Test with stats database
     (NotionPayloads.create_stat_row(TEST_STAT)),
@@ -39,6 +42,11 @@ def test_create_table_entry(notion_api, payload):
     (NT_TASKS_DB_ID,
      {"filter": {"and": [{"property": "Ticktick id", "rich_text": {"equals": "a7f9b3d2c8e60f1472065ac4"}}]}},
      "id", "f0889936-35c3-40cc-8e98-298ab93ed685"),
+
+    # Test with tasks database
+    (NT_NOTES_DB_ID,
+     {"filter": {"and": [{"property": "Ticktick id", "rich_text": {"equals": "a7f9b3d2c8e60f1472065ac4"}}]}},
+     "id", "c964714a-6fd8-474a-ba60-bb215c5ce77b"),
 
     # Test with stats database
     (NT_STATS_DB_ID,
@@ -70,7 +78,11 @@ def test_query_with_multiple_pages(notion_api):
 
 @pytest.mark.parametrize("page_id, stable_property, updated_property, payload", [
     # Test with tasks database
-    (EXISTING_TEST_TASK_PAGE_ID, "Task", "Focus time",
+    (EXISTING_TEST_TASK_PAGE_ID, "Note", "Focus time",
+     json.dumps({"properties": {"Focus time": {"number": random.random()}}})),
+
+    # Test with tasks database
+    (EXISTING_TEST_TASK_NOTE_PAGE_ID, "Note", "Focus time",
      json.dumps({"properties": {"Focus time": {"number": random.random()}}})),
 
     # Test with stats database

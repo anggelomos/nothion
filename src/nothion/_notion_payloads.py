@@ -4,7 +4,7 @@ from typing import Optional
 
 from tickthon import Task, ExpenseLog
 
-from ._config import NT_TASKS_DB_ID, NT_EXPENSES_DB_ID, NT_STATS_DB_ID
+from ._config import NT_TASKS_DB_ID, NT_EXPENSES_DB_ID, NT_STATS_DB_ID, NT_NOTES_DB_ID
 from ._notion_table_headers import TasksHeaders, ExpensesHeaders, StatsHeaders
 from .personal_stats_model import PersonalStats
 
@@ -54,8 +54,23 @@ class NotionPayloads:
         return json.dumps(payload)
 
     @classmethod
+    def create_task_note(cls, task: Task) -> str:
+        payload = cls._base_task_payload(task)
+        payload["parent"] = {"database_id": NT_NOTES_DB_ID}
+        payload["properties"][TasksHeaders.TAGS.value]["multi_select"].append({"name": "unprocessed"})
+        return json.dumps(payload)
+
+    @classmethod
     def update_task(cls, task: Task) -> str:
         return json.dumps(cls._base_task_payload(task))
+
+    @classmethod
+    def update_task_note(cls, task: Task, is_task_unprocessed: bool) -> str:
+        payload = cls._base_task_payload(task)
+        if is_task_unprocessed:
+            payload["properties"][TasksHeaders.TAGS.value]["multi_select"].append({"name": "unprocessed"})
+
+        return json.dumps(payload)
 
     @classmethod
     def complete_task(cls) -> str:

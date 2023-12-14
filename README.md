@@ -23,6 +23,10 @@ client.get_active_tasks()
 - update_task(Task)
 - delete_task(Task)
 - complete_task(Task)
+- create_task_note(Task)
+- update_task_note(Task)
+- delete_task_note(Task)
+- complete_task_note(Task)
 - add_expense_log(ExpenseLog)
 - get_incomplete_stats_dates(date)
 - update_stat(PersonalStats)
@@ -53,5 +57,6 @@ ExpenseLog:
 
 - NT_AUTH: Notion auth token, for example secret_t1CdN9S8yicG5eWLUOfhcWaOscVnFXns.
 - NT_TASKS_DB_ID: Notion tasks database id
+- NT_NOTES_DB_ID: Notion notes database id
 - NT_STATS_DB_ID: Notion stats database id
 - NT_EXPENSES_DB_ID: Notion expenses database id

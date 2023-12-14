@@ -9,7 +9,7 @@ class ExpensesHeaders(Enum):
 
 class TasksHeaders(Enum):
     DONE = "Done"
-    TASK = "Task"
+    NOTE = "Note"
     FOCUS_TIME = "Focus time"
     DUE_DATE = "Due date"
     CREATED_DATE = "Created date"
