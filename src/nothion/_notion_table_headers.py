@@ -24,6 +24,7 @@ class StatsHeaders(Enum):
     COMPLETED = "completed"
     DATE = "date"
     WORK_TIME = "work time"
+    SLEEP_TIME = "sleep time"
     FOCUS_TIME = "focus time"
     LEISURE_TIME = "leisure time"
     WEIGHT = "weight"

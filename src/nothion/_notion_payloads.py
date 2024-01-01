@@ -4,9 +4,9 @@ from typing import Optional
 
 from tickthon import Task, ExpenseLog
 
-from ._config import NT_TASKS_DB_ID, NT_EXPENSES_DB_ID, NT_STATS_DB_ID, NT_NOTES_DB_ID
-from ._notion_table_headers import TasksHeaders, ExpensesHeaders, StatsHeaders
-from .personal_stats_model import PersonalStats
+from nothion._config import NT_TASKS_DB_ID, NT_EXPENSES_DB_ID, NT_STATS_DB_ID, NT_NOTES_DB_ID
+from nothion._notion_table_headers import TasksHeaders, ExpensesHeaders, StatsHeaders
+from nothion.personal_stats_model import PersonalStats
 
 
 class NotionPayloads:
@@ -104,20 +104,6 @@ class NotionPayloads:
         return payload
 
     @staticmethod
-    def create_stat_row(personal_stats: PersonalStats) -> str:
-        payload = {
-            "parent": {"database_id": NT_STATS_DB_ID},
-            "properties": {
-                StatsHeaders.DATE.value: {"date": {"start": personal_stats.date}},
-                StatsHeaders.WORK_TIME.value: {"number": personal_stats.work_time},
-                StatsHeaders.LEISURE_TIME.value: {"number": personal_stats.leisure_time},
-                StatsHeaders.FOCUS_TIME.value: {"number": personal_stats.focus_time},
-            }
-        }
-
-        return json.dumps(payload)
-
-    @staticmethod
     def create_expense_log(expense_log: ExpenseLog) -> str:
         payload = {
             "parent": {"database_id": NT_EXPENSES_DB_ID},
@@ -153,15 +139,19 @@ class NotionPayloads:
         return {"filter": {"and": [{"property": "date", "date": {"equals": date}}]}}
 
     @staticmethod
-    def update_stat(stat: PersonalStats) -> str:
+    def update_stats_row(stat: PersonalStats, new_row: bool) -> str:
         payload = {
             "properties": {
                 StatsHeaders.DATE.value: {"date": {"start": stat.date}},
                 StatsHeaders.WEIGHT.value: {"number": stat.weight},
                 StatsHeaders.WORK_TIME.value: {"number": stat.work_time},
+                StatsHeaders.SLEEP_TIME.value: {"number": stat.sleep_time},
                 StatsHeaders.LEISURE_TIME.value: {"number": stat.leisure_time},
                 StatsHeaders.FOCUS_TIME.value: {"number": stat.focus_time},
             }
         }
+
+        if new_row:
+            payload["parent"] = {"database_id": NT_STATS_DB_ID}
 
         return json.dumps(payload)

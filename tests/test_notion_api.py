@@ -24,7 +24,7 @@ def notion_api(notion_info):
     (NotionPayloads.create_task_note(TEST_TASK)),
 
     # Test with stats database
-    (NotionPayloads.create_stat_row(TEST_STAT)),
+    (NotionPayloads.update_stats_row(TEST_STAT, new_row=True)),
 
     # Test with expenses database
     (NotionPayloads.create_expense_log(TEST_EXPENSE_LOG)),

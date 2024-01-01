@@ -1,13 +1,13 @@
 import datetime
 from typing import List, Optional
 
-from . import PersonalStats
-from ._config import NT_TASKS_DB_ID, NT_STATS_DB_ID, NT_NOTES_DB_ID
-from ._notion_payloads import NotionPayloads
-from ._notion_table_headers import TasksHeaders, StatsHeaders
 from tickthon import Task, ExpenseLog
 
-from ._notion_api import NotionAPI
+from nothion import PersonalStats
+from nothion._config import NT_TASKS_DB_ID, NT_STATS_DB_ID, NT_NOTES_DB_ID
+from nothion._notion_payloads import NotionPayloads
+from nothion._notion_table_headers import TasksHeaders, StatsHeaders
+from nothion._notion_api import NotionAPI
 
 
 class NotionClient:
@@ -248,16 +248,15 @@ class NotionClient:
 
         return [row.date for row in incomplete_rows]
 
-    def update_stat(self, stat_data: PersonalStats):
+    def update_stats(self, stat_data: PersonalStats):
         """Updates a row in the stats database in Notion."""
         date_row = self.notion_api.query_table(NT_STATS_DB_ID, NotionPayloads.get_date_rows(stat_data.date))
-        row_id = date_row[0]["id"]
 
-        notion_row_data_raw = self.notion_api.get_table_entry(row_id)
-        notion_row_data = self._parse_stats_rows(notion_row_data_raw)[0]
-
-        if stat_data != notion_row_data:
-            self.notion_api.update_table_entry(row_id, NotionPayloads.update_stat(stat_data))
+        if date_row:
+            row_id = date_row[0]["id"]
+            self.notion_api.update_table_entry(row_id, NotionPayloads.update_stats_row(stat_data, new_row=False))
+        else:
+            self.notion_api.create_table_entry(NotionPayloads.update_stats_row(stat_data, new_row=True))
 
     def get_stats_between_dates(self, start_date: datetime.date, end_date: datetime.date) -> List[PersonalStats]:
         raw_data = self.notion_api.query_table(NT_STATS_DB_ID, NotionPayloads.get_data_between_dates(start_date,

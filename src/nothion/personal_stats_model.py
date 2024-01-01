@@ -16,4 +16,5 @@ class PersonalStats:
     work_time: float
     leisure_time: float
     focus_time: float
+    sleep_time: float = 0.0
     weight: float = 0.0

@@ -5,10 +5,11 @@ from uuid import uuid4
 
 import pytest
 from nothion import NotionClient, PersonalStats
+from nothion._config import NT_STATS_DB_ID
 from tickthon import Task, ExpenseLog
 
 from nothion._notion_payloads import NotionPayloads
-from nothion._notion_table_headers import ExpensesHeaders
+from nothion._notion_table_headers import ExpensesHeaders, StatsHeaders
 
 
 @pytest.fixture(scope="module")
@@ -270,6 +271,24 @@ def test_get_incomplete_stats_dates(notion_client):
             all(datetime.strptime(i, '%Y-%m-%d') for i in incomplete_dates))
 
 
+def test_create_stats_row(notion_client):
+    stats = PersonalStats(date="9999-09-09", work_time=1.0, sleep_time=2.0, leisure_time=3.0, focus_time=4.0,
+                          weight=5.0)
+
+    notion_client.update_stats(stats)
+
+    date_row = notion_client.notion_api.query_table(NT_STATS_DB_ID, NotionPayloads.get_date_rows("9999-09-09"))[0]
+    date_row_properties = date_row["properties"]
+    assert date_row_properties[StatsHeaders.DATE.value]["date"]["start"] == stats.date
+    assert date_row_properties[StatsHeaders.WORK_TIME.value]["number"] == stats.work_time
+    assert date_row_properties[StatsHeaders.SLEEP_TIME.value]["number"] == stats.sleep_time
+    assert date_row_properties[StatsHeaders.LEISURE_TIME.value]["number"] == stats.leisure_time
+    assert date_row_properties[StatsHeaders.FOCUS_TIME.value]["number"] == stats.focus_time
+    assert date_row_properties[StatsHeaders.WEIGHT.value]["number"] == stats.weight
+
+    notion_client.notion_api.update_table_entry(date_row["id"], NotionPayloads.delete_table_entry())
+
+
 def test_update_stats_row(notion_client):
     notion_api = notion_client.notion_api
     expected_stat = PersonalStats(date="1999-09-09",
@@ -279,7 +298,7 @@ def test_update_stats_row(notion_client):
                                   focus_time=random.random())
 
     original_stat = notion_client._parse_stats_rows(notion_api.get_table_entry("c568738e82a24b258071e5412db89a2f"))[0]
-    notion_client.update_stat(expected_stat)
+    notion_client.update_stats(expected_stat)
     updated_stat = notion_client._parse_stats_rows(notion_api.get_table_entry("c568738e82a24b258071e5412db89a2f"))[0]
 
     assert updated_stat == expected_stat
@@ -292,7 +311,7 @@ def test_update_stats_row(notion_client):
     (date(2023, 1, 1), date(2023, 1, 3),
      [PersonalStats(date='2023-01-01', work_time=2.03, leisure_time=6.5, focus_time=0, weight=0),
       PersonalStats(date='2023-01-02', work_time=3.24, leisure_time=3.24, focus_time=3.12, weight=0),
-      PersonalStats(date='2023-01-03', work_time=7.52, leisure_time=1.52, focus_time=6.33, weight=0)]),
+      PersonalStats(date='2023-01-03', work_time=7.57, leisure_time=1.51, focus_time=6.33, weight=0)]),
 
     # Test start date equal to end date
     (date(2023, 1, 1), date(2023, 1, 1),
