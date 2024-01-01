@@ -32,8 +32,12 @@ class NotionAPI:
                                      headers=self._default_headers())
             response.raise_for_status()
 
-            all_results += response.json().get("results")
-            next_page_id = response.json().get("next_cursor")
+            response_body = response.json()
+            all_results += response_body.get("results")
+            next_page_id = response_body.get("next_cursor")
+
+            if query.get("page_size") and len(all_results) >= query.get("page_size", 0):
+                break
 
             if next_page_id:
                 query["start_cursor"] = next_page_id

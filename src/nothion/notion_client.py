@@ -212,13 +212,14 @@ class NotionClient:
             row_properties = row["properties"]
             rows_parsed.append(PersonalStats(date=row_properties[StatsHeaders.DATE.value]["date"]["start"],
                                              weight=row_properties[StatsHeaders.WEIGHT.value]["number"] or 0,
+                                             sleep_time=row_properties[StatsHeaders.SLEEP_TIME.value]["number"] or 0,
                                              work_time=row_properties[StatsHeaders.WORK_TIME.value]["number"] or 0,
                                              leisure_time=row_properties[StatsHeaders.LEISURE_TIME.value]
                                                                         ["number"] or 0,
                                              focus_time=row_properties[StatsHeaders.FOCUS_TIME.value]["number"] or 0))
         return rows_parsed
 
-    def _get_last_checked(self) -> Optional[PersonalStats]:
+    def _get_last_stats_row_checked(self) -> Optional[PersonalStats]:
         """Gets the last checked row from the stats in Notion database."""
         checked_rows = self.notion_api.query_table(NT_STATS_DB_ID, NotionPayloads.get_checked_stats_rows())
         if checked_rows:
@@ -235,13 +236,10 @@ class NotionClient:
             A list of dates in format YYYY-MM-DD.
         """
         initial_date = None
-        last_checked_row = self._get_last_checked()
+        last_checked_row = self._get_last_stats_row_checked()
         if last_checked_row:
             current_date = datetime.datetime.strptime(last_checked_row.date, "%Y-%m-%d")
             initial_date = current_date - datetime.timedelta(days=14)
-
-        if initial_date and (limit_date.year > initial_date.year):
-            initial_date = None
 
         payload = NotionPayloads.get_data_between_dates(initial_date, limit_date)
         incomplete_rows = self._parse_stats_rows(self.notion_api.query_table(NT_STATS_DB_ID, payload))

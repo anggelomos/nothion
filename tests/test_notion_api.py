@@ -8,7 +8,7 @@ from nothion._config import NT_TASKS_DB_ID, NT_NOTES_DB_ID, NT_STATS_DB_ID, NT_E
 from nothion._notion_api import NotionAPI
 from nothion._notion_payloads import NotionPayloads
 from .conftest import (TEST_TASK, TEST_STAT, TEST_EXPENSE_LOG, EXISTING_TEST_TASK_PAGE_ID,
-                       EXISTING_TEST_TASK_NOTE_PAGE_ID,  EXISTING_TEST_STAT_PAGE_ID, EXISTING_TEST_EXPENSE_LOG_PAGE_ID)
+                       EXISTING_TEST_TASK_NOTE_PAGE_ID, EXISTING_TEST_STAT_PAGE_ID, EXISTING_TEST_EXPENSE_LOG_PAGE_ID)
 
 
 @pytest.fixture(scope="module")
@@ -65,15 +65,22 @@ def test_query_table(notion_api, database_id, query, expected_property, expected
     assert table_entries[0][expected_property] == expected_value
 
 
-def test_query_with_multiple_pages(notion_api):
-    query = {"filter": {"and": [{"property": "año", "formula": {"number": {"equals": 2023}}},
-                                {"property": "mes", "formula": {"number": {"equals": 1}}}]},
-             "page_size": 10}
+@pytest.mark.parametrize("query, expected_pages", [
+    # Test with a page limit
+    ({"filter": {"and": [{"property": "año", "formula": {"number": {"equals": 2023}}},
+                         {"property": "mes", "formula": {"number": {"equals": 1}}}]},
+      "page_size": 10},
+     10),
 
+    # Test without a page limit
+    ({"filter": {"and": [{"property": "año", "formula": {"number": {"equals": 2023}}}]}},
+     361),
+])
+def test_query_with_multiple_pages(notion_api, query, expected_pages):
     table_entries = notion_api.query_table(NT_EXPENSES_DB_ID, query)
 
     assert isinstance(table_entries, List) and all(isinstance(i, Dict) for i in table_entries)
-    assert len(table_entries) == 37
+    assert len(table_entries) == expected_pages
 
 
 @pytest.mark.parametrize("page_id, stable_property, updated_property, payload", [

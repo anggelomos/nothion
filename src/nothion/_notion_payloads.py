@@ -119,8 +119,9 @@ class NotionPayloads:
     @staticmethod
     def get_checked_stats_rows() -> dict:
         payload = {
-            "sorts": [{"property": StatsHeaders.DATE.value, "direction": "ascending"}],
-            "filter": {"and": [{"property": StatsHeaders.COMPLETED.value, "checkbox": {"equals": True}}]}
+            "sorts": [{"property": StatsHeaders.DATE.value, "direction": "descending"}],
+            "filter": {"and": [{"property": StatsHeaders.COMPLETED.value, "checkbox": {"equals": True}}]},
+            "page_size": 1
         }
         return payload
 
