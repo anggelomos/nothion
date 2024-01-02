@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 from tickthon import Task, ExpenseLog
@@ -226,7 +226,7 @@ class NotionClient:
             return self._parse_stats_rows(checked_rows[-1])[0]
         return None
 
-    def get_incomplete_stats_dates(self, limit_date: datetime.date) -> List[str]:
+    def get_incomplete_stats_dates(self, limit_date: datetime) -> List[str]:
         """Gets the dates that are incomplete in the stats database starting 14 days before the limit date.
 
         Args:
@@ -235,16 +235,19 @@ class NotionClient:
         Returns:
             A list of dates in format YYYY-MM-DD.
         """
-        initial_date = None
+        initial_date = datetime(limit_date.year, 1, 1)
         last_checked_row = self._get_last_stats_row_checked()
         if last_checked_row:
-            current_date = datetime.datetime.strptime(last_checked_row.date, "%Y-%m-%d")
-            initial_date = current_date - datetime.timedelta(days=14)
+            current_date = datetime.strptime(last_checked_row.date, "%Y-%m-%d")
+            initial_date = current_date - timedelta(days=14)
 
-        payload = NotionPayloads.get_data_between_dates(initial_date, limit_date)
-        incomplete_rows = self._parse_stats_rows(self.notion_api.query_table(NT_STATS_DB_ID, payload))
+        dates = []
+        delta = limit_date - initial_date
+        for delta_days in range(delta.days + 1):
+            day = initial_date + timedelta(days=delta_days)
+            dates.append(day.strftime("%Y-%m-%d"))
 
-        return [row.date for row in incomplete_rows]
+        return dates
 
     def update_stats(self, stat_data: PersonalStats):
         """Updates a row in the stats database in Notion."""
