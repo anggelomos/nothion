@@ -28,3 +28,9 @@ class StatsHeaders(Enum):
     FOCUS_TIME = "focus time"
     LEISURE_TIME = "leisure time"
     WEIGHT = "weight"
+
+
+class NotesHeaders(Enum):
+    TYPE = "Type"
+    SUBTYPE = "Sub-type"
+    DUE_DATE = "Due date"
