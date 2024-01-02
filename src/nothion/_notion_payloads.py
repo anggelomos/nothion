@@ -1,5 +1,5 @@
 import json
-import datetime
+from datetime import datetime
 from typing import Optional
 
 from tickthon import Task, ExpenseLog
@@ -126,7 +126,7 @@ class NotionPayloads:
         return payload
 
     @staticmethod
-    def get_data_between_dates(initial_date: Optional[datetime.date], today_date: datetime.date) -> dict:
+    def get_data_between_dates(initial_date: Optional[datetime], today_date: datetime) -> dict:
         filters = []
         if initial_date:
             filters.append({"property": "date", "date": {"on_or_after": initial_date.strftime("%Y-%m-%d")}})
@@ -146,7 +146,8 @@ class NotionPayloads:
                 StatsHeaders.DATE.value: {"date": {"start": stat.date}},
                 StatsHeaders.WEIGHT.value: {"number": stat.weight},
                 StatsHeaders.WORK_TIME.value: {"number": stat.work_time},
-                StatsHeaders.SLEEP_TIME.value: {"number": stat.sleep_time},
+                # Sleep time is currently logged manually, so it is commented so that it is not overwritten.
+                # StatsHeaders.SLEEP_TIME.value: {"number": stat.sleep_time},
                 StatsHeaders.LEISURE_TIME.value: {"number": stat.leisure_time},
                 StatsHeaders.FOCUS_TIME.value: {"number": stat.focus_time},
             }
@@ -154,5 +155,6 @@ class NotionPayloads:
 
         if new_row:
             payload["parent"] = {"database_id": NT_STATS_DB_ID}
+            payload["properties"][StatsHeaders.SLEEP_TIME.value] = {"number": stat.sleep_time}
 
         return json.dumps(payload)

@@ -259,7 +259,7 @@ class NotionClient:
         else:
             self.notion_api.create_table_entry(NotionPayloads.update_stats_row(stat_data, new_row=True))
 
-    def get_stats_between_dates(self, start_date: datetime.date, end_date: datetime.date) -> List[PersonalStats]:
+    def get_stats_between_dates(self, start_date: datetime, end_date: datetime) -> List[PersonalStats]:
         raw_data = self.notion_api.query_table(NT_STATS_DB_ID, NotionPayloads.get_data_between_dates(start_date,
                                                                                                      end_date))
         return self._parse_stats_rows(raw_data)
