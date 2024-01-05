@@ -31,6 +31,7 @@ class StatsHeaders(Enum):
 
 
 class NotesHeaders(Enum):
+    NOTE = "Note"
     TYPE = "Type"
     SUBTYPE = "Sub-type"
     DUE_DATE = "Due date"

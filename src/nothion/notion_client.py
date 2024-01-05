@@ -136,6 +136,12 @@ class NotionClient:
         raw_tasks = self.notion_api.query_table(NT_NOTES_DB_ID, payload)
         return len(raw_tasks) > 0
 
+    def is_highlight_log_already_created(self, task: Task) -> bool:
+        """Checks if a highlight log is already created in Notion."""
+        payload = NotionPayloads.get_highlight_log(task)
+        raw_tasks = self.notion_api.query_table(NT_NOTES_DB_ID, payload)
+        return len(raw_tasks) > 0
+
     def create_task(self, task: Task) -> Optional[dict]:
         """Creates a task in Notion.
 
@@ -200,6 +206,14 @@ class NotionClient:
         """Adds an expense log to the expenses DB in Notion."""
         payload = NotionPayloads.create_expense_log(expense_log)
         return self.notion_api.create_table_entry(payload)
+
+    def add_highlight_log(self, log: Task) -> dict | None:
+        """Adds a highlight log to the Notes DB in Notion."""
+        payload = NotionPayloads.create_highlight_log(log)
+
+        if not self.is_highlight_log_already_created(log):
+            return self.notion_api.create_table_entry(payload)
+        return None
 
     @staticmethod
     def _parse_stats_rows(rows: List[dict] | dict) -> List[PersonalStats]:

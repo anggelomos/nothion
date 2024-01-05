@@ -9,7 +9,7 @@ from nothion._config import NT_STATS_DB_ID
 from tickthon import Task, ExpenseLog
 
 from nothion._notion_payloads import NotionPayloads
-from nothion._notion_table_headers import ExpensesHeaders, StatsHeaders
+from nothion._notion_table_headers import ExpensesHeaders, StatsHeaders, NotesHeaders
 
 
 @pytest.fixture(scope="module")
@@ -259,6 +259,29 @@ def test_add_expense_log(notion_client):
             == expected_expense_log.product)
 
     notion_client.notion_api.update_table_entry(expense_log["id"], NotionPayloads.delete_table_entry())
+
+
+def test_add_highlight_log(notion_client):
+    expected_highlight_log = Task(title="Tested nothion highlight", due_date="9999-09-09",
+                                  ticktick_id="726db85349f01aec349fdb83", created_date=datetime.utcnow().isoformat(),
+                                  ticktick_etag="3c02ab1d", tags=("highlight",))
+
+    highlight_log = notion_client.add_highlight_log(expected_highlight_log)
+
+    highlight_log_entry = notion_client.notion_api.get_table_entry(highlight_log["id"])
+    highlight_log_properties = highlight_log_entry["properties"]
+    assert notion_client.is_highlight_log_already_created(expected_highlight_log)
+    assert highlight_log_properties[NotesHeaders.TYPE.value]["select"]["name"] in expected_highlight_log.tags
+    assert (highlight_log_properties[NotesHeaders.NOTE.value]["title"][0]["text"]["content"] ==
+            expected_highlight_log.title)
+
+    highlight_date = (datetime.fromisoformat(highlight_log_properties[NotesHeaders.DUE_DATE.value]["date"]["start"])
+                      .replace(tzinfo=None))
+    expected_highlight_date = (datetime.fromisoformat(expected_highlight_log.created_date)
+                               .replace(second=0, microsecond=0))
+    assert (highlight_date == expected_highlight_date)
+
+    notion_client.notion_api.update_table_entry(highlight_log["id"], NotionPayloads.delete_table_entry())
 
 
 def test_get_incomplete_stats_dates(notion_client):

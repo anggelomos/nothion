@@ -5,7 +5,7 @@ from typing import Optional
 from tickthon import Task, ExpenseLog
 
 from nothion._config import NT_TASKS_DB_ID, NT_EXPENSES_DB_ID, NT_STATS_DB_ID, NT_NOTES_DB_ID
-from nothion._notion_table_headers import TasksHeaders, ExpensesHeaders, StatsHeaders
+from nothion._notion_table_headers import TasksHeaders, ExpensesHeaders, StatsHeaders, NotesHeaders
 from nothion.personal_stats_model import PersonalStats
 
 
@@ -111,6 +111,41 @@ class NotionPayloads:
                 ExpensesHeaders.PRODUCT.value: {"title": [{"text": {"content": expense_log.product}}]},
                 ExpensesHeaders.EXPENSE.value: {"number": expense_log.expense},
                 ExpensesHeaders.DATE.value: {"date": {"start": expense_log.date}}
+            }
+        }
+
+        return json.dumps(payload)
+
+    @staticmethod
+    def get_highlight_log(log: Task) -> dict:
+        """Payload to get a highlight note.
+
+        Args:
+            log: The task to search for.
+        """
+        date_without_seconds = datetime.fromisoformat(log.created_date).replace(second=0, microsecond=0).isoformat()
+        payload = {"filter": {
+            "and": [{"property": NotesHeaders.NOTE.value,
+                     "rich_text": {"equals": log.title}},
+                    {"property": NotesHeaders.TYPE.value,
+                     "select": {"equals": "highlight"}
+                     },
+                    {"property": NotesHeaders.DUE_DATE.value,
+                     "date": {"equals": date_without_seconds}
+                     },
+                    ]}}
+
+        return payload
+
+    @classmethod
+    def create_highlight_log(cls, log: Task) -> str:
+        payload = {
+            "parent": {"database_id": NT_NOTES_DB_ID},
+            "icon": {"type": "emoji", "emoji": "✨"},
+            "properties": {
+                NotesHeaders.NOTE.value: {"title": [{"text": {"content": log.title}}]},
+                NotesHeaders.TYPE.value: {"select": {"name": "highlight"}},
+                NotesHeaders.DUE_DATE.value: {"date": {"start": log.created_date}}
             }
         }
 
