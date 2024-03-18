@@ -5,11 +5,12 @@ from uuid import uuid4
 
 import pytest
 from nothion import NotionClient, PersonalStats
-from nothion._config import NT_STATS_DB_ID
+from nothion._config import NT_STATS_DB_ID, NT_NOTES_DB_ID
 from tickthon import Task, ExpenseLog
 
 from nothion._notion_payloads import NotionPayloads
 from nothion._notion_table_headers import ExpensesHeaders, StatsHeaders, NotesHeaders
+from tests.conftest import EXISTING_TEST_JOURNAL_PAGE_ID
 
 
 @pytest.fixture(scope="module")
@@ -346,3 +347,59 @@ def test_update_stats_row(notion_client):
 def test_get_stats_between_dates(notion_client, start_date, end_date, expected_stats):
     stats = notion_client.get_stats_between_dates(start_date, end_date)
     assert stats == expected_stats
+
+
+@pytest.mark.parametrize("title, page_type, expected_result", [
+    # Test with a valid title and page type
+    ("test-journal-entry", "journal", True),
+
+    # Test with a valid title and a wrong page type
+    ("test-journal-entry", "test-wrong-page-type", False),
+
+    # Test with a wrong title and a valid page type
+    ("test-wrong-title", "journal", False),
+
+    # Test with a wrong title and page type
+    ("test-wrong-title", "test-wrong-page-type", False),
+])
+def test_is_note_page_already_created(notion_client, title, page_type, expected_result):
+    is_note_page_created = notion_client.is_note_page_already_created(title, page_type)
+    assert is_note_page_created == expected_result
+
+
+def test_create_note_page(notion_client):
+    note_page = ["test-note-page", "note", ("test",), datetime(2000, 1, 1),
+                 "test note page content"]
+
+    notion_client.create_note_page(*note_page)
+
+    note_page_payload = NotionPayloads.get_note_page(note_page[0], note_page[1])
+    created_note_page = notion_client.notion_api.query_table(NT_NOTES_DB_ID, note_page_payload)[0]
+    page_properties = created_note_page["properties"]
+
+    assert page_properties[NotesHeaders.NOTE.value]["title"][0]["plain_text"] == note_page[0]
+    assert page_properties[NotesHeaders.TYPE.value]["select"]["name"] == note_page[1]
+    assert page_properties[NotesHeaders.SUBTYPE.value]["multi_select"][0]["name"] == note_page[2][0]
+    assert page_properties[NotesHeaders.DUE_DATE.value]["date"]["start"] == note_page[3].strftime("%Y-%m-%d")
+
+    notion_client.notion_api.update_table_entry(created_note_page["id"], NotionPayloads.delete_table_entry())
+
+
+def test_get_daily_journal_data(notion_client):
+    expected_object = "page"
+    expected_id = EXISTING_TEST_JOURNAL_PAGE_ID
+
+    journal_data = notion_client.get_daily_journal_data(datetime(1900, 1, 1))
+
+    assert journal_data.get("object", "") == expected_object
+    assert journal_data.get("id", "").replace("-", "") == expected_id
+
+
+def test_get_daily_journal_content(notion_client):
+    expected_journal_content = [['test-header-1'], ['test-header-2'], ['test-header-2'], ['test-paragraph'],
+                                ['- test-bullet'], ['> test-toggle']]
+
+    journal_content = notion_client.get_daily_journal_content(datetime(1900, 1, 1))
+
+    assert len(journal_content) == len(expected_journal_content)
+    assert journal_content == expected_journal_content

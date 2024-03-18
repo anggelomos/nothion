@@ -5,8 +5,11 @@ import requests
 
 
 class NotionAPI:
-    BASE_URL = "https://api.notion.com/v1"
     NOTION_VERSION = "2022-06-28"
+    BASE_URL = "https://api.notion.com/v1"
+    PAGE_URL = BASE_URL + "/pages"
+    DATABASE_URL = BASE_URL + "/databases"
+    BLOCK_URL = BASE_URL + "/blocks"
 
     def __init__(self, auth_secret: str):
         self._auth_secret = auth_secret
@@ -27,7 +30,7 @@ class NotionAPI:
         while next_page_id or first_request:
             first_request = False
 
-            response = requests.post(url=self.BASE_URL + "/databases/" + table_id + "/query",
+            response = requests.post(url=f"{self.DATABASE_URL}/{table_id}/query",
                                      data=json.dumps(query),
                                      headers=self._default_headers())
             response.raise_for_status()
@@ -45,20 +48,26 @@ class NotionAPI:
         return all_results
 
     def create_table_entry(self, payload: str) -> dict:
-        response = requests.post(url=self.BASE_URL + "/pages",
+        response = requests.post(url=self.PAGE_URL,
                                  data=payload,
                                  headers=self._default_headers())
         response.raise_for_status()
         return response.json()
 
     def get_table_entry(self, page_id: str) -> dict:
-        response = requests.get(url=self.BASE_URL + "/pages/" + page_id,
+        response = requests.get(url=f"{self.PAGE_URL}/{page_id}",
                                 headers=self._default_headers())
         response.raise_for_status()
         return response.json()
 
     def update_table_entry(self, page_id: str, payload: str):
-        response = requests.patch(url=self.BASE_URL + "/pages/" + page_id,
+        response = requests.patch(url=f"{self.PAGE_URL}/{page_id}",
                                   data=payload,
                                   headers=self._default_headers())
         response.raise_for_status()
+
+    def get_block_children(self, block_id: str) -> dict:
+        response = requests.get(url=f"{self.BLOCK_URL}/{block_id}/children?page_size=100",
+                                headers=self._default_headers())
+        response.raise_for_status()
+        return response.json()

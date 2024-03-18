@@ -193,3 +193,42 @@ class NotionPayloads:
             payload["properties"][StatsHeaders.SLEEP_TIME.value] = {"number": stat.sleep_time}
 
         return json.dumps(payload)
+
+    @staticmethod
+    def get_daily_journal_entry(journal_date: datetime) -> dict:
+        return {"filter": {"and": [{"property": "Type", "select": {"equals": "journal"}},
+                                   {"property": "Sub-type", "multi_select": {"contains": "daily"}},
+                                   {"property": "Due date", "date": {"equals": journal_date.strftime("%Y-%m-%d")}}
+                                   ]},
+                "page_size": 1}
+
+    @classmethod
+    def create_note_page(cls, title: str, page_type: str, page_subtype: tuple[str], date: datetime,
+                         content: str) -> str:
+        content_block = {"object": "block",
+                         "type": "paragraph",
+                         "paragraph": {"rich_text": [{"type": "text", "text": {"content": content}}]}
+                         }
+
+        payload = {
+            "parent": {"database_id": NT_NOTES_DB_ID},
+            "properties": {
+                NotesHeaders.NOTE.value: {"title": [{"text": {"content": title}}]},
+                NotesHeaders.TYPE.value: {"select": {"name": page_type}},
+                NotesHeaders.SUBTYPE.value: {"multi_select": [{"name": st} for st in page_subtype]},
+                NotesHeaders.DUE_DATE.value: {"date": {"start": date.strftime("%Y-%m-%d")}},
+            },
+            "children": [content_block]
+        }
+
+        return json.dumps(payload)
+
+    @classmethod
+    def get_note_page(cls, title: str, page_type: str) -> dict:
+        return {"filter": {
+                    "and": [{"property": NotesHeaders.NOTE.value,
+                             "rich_text": {"equals": title}},
+                            {"property": NotesHeaders.TYPE.value,
+                             "select": {"equals": page_type}
+                             },
+                            ]}}

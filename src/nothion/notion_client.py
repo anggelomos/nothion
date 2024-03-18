@@ -197,7 +197,24 @@ class NotionClient:
 
         self.notion_api.update_table_entry(page_id, payload)
 
+    def is_note_page_already_created(self, title: str, page_type: str) -> bool:
+        """Checks if a note's page is already created in Notion."""
+        payload = NotionPayloads.get_note_page(title, page_type)
+        raw_tasks = self.notion_api.query_table(NT_NOTES_DB_ID, payload)
+        return len(raw_tasks) > 0
+
+    def create_note_page(self, title: str, page_type: str, page_subtype: tuple[str], date: datetime,
+                         content: str) -> dict | None:
+        """Creates a note page in Notion."""
+
+        payload = NotionPayloads.create_note_page(title, page_type, page_subtype, date, content)
+
+        if not self.is_note_page_already_created(title, page_type):
+            return self.notion_api.create_table_entry(payload)
+        return None
+
     def complete_task_note(self, task: Task):
+        """Completes a task in Notion."""
         page_id = self.get_task_note_notion_id(task)
         payload = NotionPayloads.complete_task()
         self.notion_api.update_table_entry(page_id, payload)
@@ -277,3 +294,49 @@ class NotionClient:
         raw_data = self.notion_api.query_table(NT_STATS_DB_ID, NotionPayloads.get_data_between_dates(start_date,
                                                                                                      end_date))
         return self._parse_stats_rows(raw_data)
+
+    @staticmethod
+    def _parse_notion_block(block: dict) -> str:
+        """Parses a block from Notion into a string."""
+        block_type = block["type"]
+        block_raw_text = block[block_type].get("rich_text", [])
+        block_text = block_raw_text[0]["plain_text"] if block_raw_text else ""
+
+        if block_type in ["paragraph", "heading_1", "heading_2", "heading_3"]:
+            return block_text
+        elif block_type == "bulleted_list_item":
+            return "- " + block_text
+        elif block_type == "toggle":
+            return "> " + block_text
+        return block_type
+
+    def _get_all_block_children(self, block_id: str) -> list:
+        """Recursively gets the children of a block in Notion.
+
+        Args:
+            block_id: The ID of the block to get the children from.
+
+        Returns:
+            A list of children of the block.
+        """
+        children = []
+        children_data = self.notion_api.get_block_children(block_id)
+
+        for child in children_data.get("results", []):
+            parsed_child: list[str | list] = [self._parse_notion_block(child)]
+            children.append(parsed_child)
+
+            if child.get("has_children", False):
+                parsed_child.append(self._get_all_block_children(child["id"]))
+
+        return children
+
+    def get_daily_journal_data(self, date: datetime) -> dict:
+        """"Gets the page data of a daily journal entry for a specific date."""
+        journal_entry = self.notion_api.query_table(NT_NOTES_DB_ID, NotionPayloads.get_daily_journal_entry(date))
+        return journal_entry[0]
+
+    def get_daily_journal_content(self, date: datetime) -> list:
+        """Gets the content of a journal entry for a specific date."""
+        journal_entry = self.get_daily_journal_data(date)["id"]
+        return self._get_all_block_children(journal_entry)

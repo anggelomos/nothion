@@ -8,7 +8,8 @@ from nothion._config import NT_TASKS_DB_ID, NT_NOTES_DB_ID, NT_STATS_DB_ID, NT_E
 from nothion._notion_api import NotionAPI
 from nothion._notion_payloads import NotionPayloads
 from .conftest import (TEST_TASK, TEST_STAT, TEST_EXPENSE_LOG, EXISTING_TEST_TASK_PAGE_ID,
-                       EXISTING_TEST_TASK_NOTE_PAGE_ID, EXISTING_TEST_STAT_PAGE_ID, EXISTING_TEST_EXPENSE_LOG_PAGE_ID)
+                       EXISTING_TEST_TASK_NOTE_PAGE_ID, EXISTING_TEST_STAT_PAGE_ID, EXISTING_TEST_EXPENSE_LOG_PAGE_ID,
+                       EXISTING_TEST_JOURNAL_PAGE_ID)
 
 
 @pytest.fixture(scope="module")
@@ -108,3 +109,12 @@ def test_update_table_entry(notion_api, stable_property, updated_property, page_
     updated_table_entry = notion_api.get_table_entry(page_id)
     assert original_table_entry["properties"][stable_property] == updated_table_entry["properties"][stable_property]
     assert original_table_entry["properties"][updated_property] != updated_table_entry["properties"][updated_property]
+
+
+def test_get_block_children(notion_api):
+    expected_children = 6
+    expected_first_children_type = "heading_1"
+    block_children = notion_api.get_block_children(EXISTING_TEST_JOURNAL_PAGE_ID)
+
+    assert len(block_children.get("results", [])) == expected_children
+    assert block_children.get("results", [])[0].get("type", "") == expected_first_children_type
