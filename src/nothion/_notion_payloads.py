@@ -35,6 +35,7 @@ class NotionPayloads:
                 TasksHeaders.FOCUS_TIME.value: {"number": task.focus_time},
                 TasksHeaders.TAGS.value: {"multi_select": list(map(lambda tag: {"name": tag}, task.tags))},
                 TasksHeaders.TICKTICK_ID.value: {"rich_text": [{"text": {"content": task.ticktick_id}}]},
+                TasksHeaders.COLUMN_ID.value: {"rich_text": [{"text": {"content": task.column_id}}]},
                 TasksHeaders.PROJECT_ID.value: {"rich_text": [{"text": {"content": task.project_id}}]},
                 TasksHeaders.TICKTICK_ETAG.value: {"rich_text": [{"text": {"content": task.ticktick_etag}}]},
                 TasksHeaders.CREATED_DATE.value: {"date": {"start": task.created_date}},

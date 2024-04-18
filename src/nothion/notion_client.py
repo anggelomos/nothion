@@ -43,10 +43,15 @@ class NotionClient:
             if task_properties[TasksHeaders.PROJECT_ID.value]["rich_text"]:
                 project_id = task_properties[TasksHeaders.PROJECT_ID.value]["rich_text"][0]["plain_text"]
 
+            column_id = ""
+            if task_properties[TasksHeaders.COLUMN_ID.value]["rich_text"]:
+                column_id = task_properties[TasksHeaders.COLUMN_ID.value]["rich_text"][0]["plain_text"]
+
             parsed_tasks.append(Task(title=task_properties[TasksHeaders.NOTE.value]["title"][0]["plain_text"],
                                      status=2 if task_properties[TasksHeaders.DONE.value]["checkbox"] else 0,
                                      ticktick_id=task_properties[TasksHeaders.TICKTICK_ID.value]
                                      ["rich_text"][0]["plain_text"],
+                                     column_id=column_id,
                                      ticktick_etag=task_properties[TasksHeaders.TICKTICK_ETAG.value]
                                      ["rich_text"][0]["plain_text"],
                                      created_date=created_date,

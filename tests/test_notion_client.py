@@ -181,6 +181,7 @@ def test_update_task(notion_client):
 def test_create_task_note(notion_client):
     task_id = uuid4().hex
     expected_task = Task(ticktick_id=task_id,
+                         column_id="test-column-id",
                          ticktick_etag="created-task-note-to-delete",
                          created_date="9999-09-09",
                          status=0,

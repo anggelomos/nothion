@@ -15,6 +15,7 @@ class TasksHeaders(Enum):
     CREATED_DATE = "Created date"
     TAGS = "Tags"
     TICKTICK_ID = "Ticktick id"
+    COLUMN_ID = "Column id"
     TICKTICK_ETAG = "Ticktick etag"
     PROJECT_ID = "Project id"
     TIMEZONE = "Timezone"
