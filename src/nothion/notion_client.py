@@ -4,7 +4,7 @@ from typing import List, Optional
 from tickthon import Task, ExpenseLog
 
 from nothion import PersonalStats
-from nothion._config import NT_TASKS_DB_ID, NT_STATS_DB_ID, NT_NOTES_DB_ID
+from nothion._config import NT_TASKS_DB_ID, NT_STATS_DB_ID, NT_NOTES_DB_ID, NT_EXPENSES_DB_ID
 from nothion._notion_payloads import NotionPayloads
 from nothion._notion_table_headers import TasksHeaders, StatsHeaders
 from nothion._notion_api import NotionAPI
@@ -12,9 +12,35 @@ from nothion._notion_api import NotionAPI
 
 class NotionClient:
 
-    def __init__(self, auth_secret: str):
+    def __init__(self,
+                 auth_secret: str,
+                 tasks_db_id: str | None = None,
+                 stats_db_id: str | None = None,
+                 notes_db_id: str | None = None,
+                 expenses_db_id: str | None = None):
         self.notion_api = NotionAPI(auth_secret)
         self.active_tasks: List[Task] = []
+
+        # Use provided database IDs or fall back to config defaults
+        self.tasks_db_id = tasks_db_id or NT_TASKS_DB_ID
+        self.stats_db_id = stats_db_id or NT_STATS_DB_ID
+        self.notes_db_id = notes_db_id or NT_NOTES_DB_ID
+        self.expenses_db_id = expenses_db_id or NT_EXPENSES_DB_ID
+
+        # Initialize NotionPayloads with database IDs
+        self.notion_payloads = NotionPayloads(
+            tasks_db_id=self.tasks_db_id,
+            stats_db_id=self.stats_db_id,
+            notes_db_id=self.notes_db_id,
+            expenses_db_id=self.expenses_db_id
+        )
+
+        # Initialize inner handlers without redundant database IDs
+        self.tasks = self.TasksHandler(self)
+        self.notes = self.NotesHandler(self)
+        self.stats = self.StatsHandler(self)
+        self.expenses = self.ExpensesHandler(self)
+        self.blocks = self.BlocksHandler(self)
 
     @staticmethod
     def _parse_notion_tasks(raw_tasks: List[dict] | dict) -> List[Task]:
@@ -65,283 +91,288 @@ class NotionClient:
 
         return parsed_tasks
 
-    def get_active_tasks(self) -> List[Task]:
-        """Gets all active tasks from Notion that are not done."""
-        payload = NotionPayloads.get_active_tasks()
+    # Main class for task-related operations
+    class TasksHandler:
+        def __init__(self, client):
+            self.client = client
 
-        raw_tasks = self.notion_api.query_table(NT_TASKS_DB_ID, payload)
-        notion_tasks = self._parse_notion_tasks(raw_tasks)
+        def get_active_tasks(self) -> List[Task]:
+            """Gets all active tasks from Notion that are not done."""
+            payload = self.client.notion_payloads.get_active_tasks()
+            raw_tasks = self.client.notion_api.query_table(self.client.tasks_db_id, payload)
+            notion_tasks = self.client._parse_notion_tasks(raw_tasks)
+            self.client.active_tasks = notion_tasks
+            return notion_tasks
 
-        self.active_tasks = notion_tasks
-        return notion_tasks
+        def get_notion_task(self, ticktick_task: Task) -> Optional[Task]:
+            """Gets the task from Notion that have the given ticktick etag."""
+            payload = self.client.notion_payloads.get_notion_task(ticktick_task)
+            raw_tasks = self.client.notion_api.query_table(self.client.tasks_db_id, payload)
 
-    def get_notion_task(self, ticktick_task: Task) -> Optional[Task]:
-        """Gets the task from Notion that have the given ticktick etag."""
-        payload = NotionPayloads.get_notion_task(ticktick_task)
-        raw_tasks = self.notion_api.query_table(NT_TASKS_DB_ID, payload)
+            notion_tasks = self.client._parse_notion_tasks(raw_tasks)
+            if notion_tasks:
+                return notion_tasks[0]
+            return None
 
-        notion_tasks = self._parse_notion_tasks(raw_tasks)
-        if notion_tasks:
-            return notion_tasks[0]
-        return None
+        def get_notion_id(self, ticktick_task: Task) -> str:
+            """Gets the Notion ID of a task."""
+            payload = self.client.notion_payloads.get_notion_task(ticktick_task)
+            raw_tasks = self.client.notion_api.query_table(self.client.tasks_db_id, payload)
 
-    def get_notion_task_note(self, ticktick_task: Task) -> Optional[Task]:
-        """Gets the task from Notion's notes database that have the given ticktick etag."""
-        payload = NotionPayloads.get_notion_task(ticktick_task)
-        raw_tasks = self.notion_api.query_table(NT_NOTES_DB_ID, payload)
+            return raw_tasks[0]["id"].replace("-", "")
 
-        notion_tasks = self._parse_notion_tasks(raw_tasks)
-        if notion_tasks:
-            return notion_tasks[0]
-        return None
+        def is_already_created(self, task: Task) -> bool:
+            """Checks if a task is already created in Notion."""
+            payload = self.client.notion_payloads.get_notion_task(task)
+            raw_tasks = self.client.notion_api.query_table(self.client.tasks_db_id, payload)
+            return len(raw_tasks) > 0
 
-    def delete_task(self, task: Task):
-        """Deletes a task from Notion."""
-        task_payload = NotionPayloads.get_notion_task(task)
-        raw_tasks = self.notion_api.query_table(NT_TASKS_DB_ID, task_payload)
+        def create(self, task: Task) -> Optional[dict]:
+            """Creates a task in Notion."""
+            payload = self.client.notion_payloads.create_task(task)
 
-        delete_payload = NotionPayloads.delete_table_entry()
-        for raw_task in raw_tasks:
-            page_id = raw_task["id"]
-            self.notion_api.update_table_entry(page_id, delete_payload)
+            if not self.is_already_created(task):
+                return self.client.notion_api.create_table_entry(payload)
+            return None
 
-    def delete_task_note(self, task: Task):
-        """Deletes a task from Notion."""
-        task_payload = NotionPayloads.get_notion_task(task)
-        raw_tasks = self.notion_api.query_table(NT_NOTES_DB_ID, task_payload)
+        def update(self, task: Task):
+            """Updates a task in Notion."""
+            page_id = self.get_notion_id(task)
+            payload = self.client.notion_payloads.update_task(task)
+            self.client.notion_api.update_table_entry(page_id, payload)
 
-        delete_payload = NotionPayloads.delete_table_entry()
-        for raw_task in raw_tasks:
-            page_id = raw_task["id"]
-            self.notion_api.update_table_entry(page_id, delete_payload)
+        def complete(self, task: Task):
+            """Completes a task in Notion."""
+            page_id = self.get_notion_id(task)
+            payload = self.client.notion_payloads.complete_task()
+            self.client.notion_api.update_table_entry(page_id, payload)
 
-    def get_task_notion_id(self, ticktick_task: Task) -> str:
-        """Gets the Notion ID of a task."""
-        payload = NotionPayloads.get_notion_task(ticktick_task)
-        raw_tasks = self.notion_api.query_table(NT_TASKS_DB_ID, payload)
+        def delete(self, task: Task):
+            """Deletes a task from Notion."""
+            task_payload = self.client.notion_payloads.get_notion_task(task)
+            raw_tasks = self.client.notion_api.query_table(self.client.tasks_db_id, task_payload)
 
-        return raw_tasks[0]["id"].replace("-", "")
+            delete_payload = self.client.notion_payloads.delete_table_entry()
+            for raw_task in raw_tasks:
+                page_id = raw_task["id"]
+                self.client.notion_api.update_table_entry(page_id, delete_payload)
 
-    def is_task_already_created(self, task: Task) -> bool:
-        """Checks if a task is already created in Notion."""
-        payload = NotionPayloads.get_notion_task(task)
-        raw_tasks = self.notion_api.query_table(NT_TASKS_DB_ID, payload)
-        return len(raw_tasks) > 0
+    # Notes-related operations
+    class NotesHandler:
+        def __init__(self, client):
+            self.client = client
 
-    def get_task_note_notion_id(self, ticktick_task: Task) -> str:
-        """Gets the Notion ID of a task."""
-        payload = NotionPayloads.get_notion_task(ticktick_task)
-        raw_tasks = self.notion_api.query_table(NT_NOTES_DB_ID, payload)
+        def get_task_note(self, ticktick_task: Task) -> Optional[Task]:
+            """Gets the task from Notion's notes database that have the given ticktick etag."""
+            payload = self.client.notion_payloads.get_notion_task(ticktick_task)
+            raw_tasks = self.client.notion_api.query_table(self.client.notes_db_id, payload)
 
-        return raw_tasks[0]["id"].replace("-", "")
+            notion_tasks = self.client._parse_notion_tasks(raw_tasks)
+            if notion_tasks:
+                return notion_tasks[0]
+            return None
 
-    def is_task_note_already_created(self, task: Task) -> bool:
-        """Checks if a task is already created in Notion."""
-        payload = NotionPayloads.get_notion_task(task)
-        raw_tasks = self.notion_api.query_table(NT_NOTES_DB_ID, payload)
-        return len(raw_tasks) > 0
+        def get_notion_id(self, ticktick_task: Task) -> str:
+            """Gets the Notion ID of a task note."""
+            payload = self.client.notion_payloads.get_notion_task(ticktick_task)
+            raw_tasks = self.client.notion_api.query_table(self.client.notes_db_id, payload)
 
-    def is_highlight_log_already_created(self, task: Task) -> bool:
-        """Checks if a highlight log is already created in Notion."""
-        payload = NotionPayloads.get_highlight_log(task)
-        raw_tasks = self.notion_api.query_table(NT_NOTES_DB_ID, payload)
-        return len(raw_tasks) > 0
+            return raw_tasks[0]["id"].replace("-", "")
 
-    def create_task(self, task: Task) -> Optional[dict]:
-        """Creates a task in Notion.
+        def is_task_already_created(self, task: Task) -> bool:
+            """Checks if a task note is already created in Notion."""
+            payload = self.client.notion_payloads.get_notion_task(task)
+            raw_tasks = self.client.notion_api.query_table(self.client.notes_db_id, payload)
+            return len(raw_tasks) > 0
 
-        Args:
-            task: The task to create.
+        def create_task(self, task: Task) -> Optional[dict]:
+            """Creates a task in the notes database in Notion."""
+            payload = self.client.notion_payloads.create_task_note(task)
 
-        Returns:
-            The response from Notion if the task was created.
-        """
+            if not self.is_task_already_created(task):
+                return self.client.notion_api.create_table_entry(payload)
+            return None
 
-        payload = NotionPayloads.create_task(task)
+        def update_task(self, task: Task):
+            """Updates a task note in Notion."""
+            page_id = self.get_notion_id(task)
 
-        if not self.is_task_already_created(task):
-            return self.notion_api.create_table_entry(payload)
-        return None
+            notion_task = self.client.tasks.get_notion_task(task)
+            is_task_unprocessed = False
+            if notion_task:
+                is_task_unprocessed = "unprocessed" in notion_task.tags
+            payload = self.client.notion_payloads.update_task_note(task, is_task_unprocessed)
 
-    def update_task(self, task: Task):
-        """Updates a task in Notion."""
-        page_id = self.get_task_notion_id(task)
-        payload = NotionPayloads.update_task(task)
-        self.notion_api.update_table_entry(page_id, payload)
+            self.client.notion_api.update_table_entry(page_id, payload)
 
-    def complete_task(self, task: Task):
-        page_id = self.get_task_notion_id(task)
-        payload = NotionPayloads.complete_task()
-        self.notion_api.update_table_entry(page_id, payload)
+        def complete_task(self, task: Task):
+            """Completes a task note in Notion."""
+            page_id = self.get_notion_id(task)
+            payload = self.client.notion_payloads.complete_task()
+            self.client.notion_api.update_table_entry(page_id, payload)
 
-    def create_task_note(self, task: Task) -> Optional[dict]:
-        """Creates a task in the notes database in Notion.
+        def delete_task(self, task: Task):
+            """Deletes a task note from Notion."""
+            task_payload = self.client.notion_payloads.get_notion_task(task)
+            raw_tasks = self.client.notion_api.query_table(self.client.notes_db_id, task_payload)
 
-        Args:
-            task: The task to create.
+            delete_payload = self.client.notion_payloads.delete_table_entry()
+            for raw_task in raw_tasks:
+                page_id = raw_task["id"]
+                self.client.notion_api.update_table_entry(page_id, delete_payload)
 
-        Returns:
-            The response from Notion if the task was created.
-        """
+        def is_page_already_created(self, title: str, page_type: str) -> bool:
+            """Checks if a note's page is already created in Notion."""
+            payload = self.client.notion_payloads.get_note_page(title, page_type)
+            raw_tasks = self.client.notion_api.query_table(self.client.notes_db_id, payload)
+            return len(raw_tasks) > 0
 
-        payload = NotionPayloads.create_task_note(task)
+        def create_page(self,
+                        title: str,
+                        page_type: str,
+                        page_subtype: tuple[str],
+                        date: datetime,
+                        content: str) -> dict | None:
+            """Creates a note page in Notion."""
+            payload = self.client.notion_payloads.create_note_page(title, page_type, page_subtype, date, content)
 
-        if not self.is_task_note_already_created(task):
-            return self.notion_api.create_table_entry(payload)
-        return None
+            if not self.is_page_already_created(title, page_type):
+                return self.client.notion_api.create_table_entry(payload)
+            return None
 
-    def update_task_note(self, task: Task):
-        """Updates a task in Notion."""
-        page_id = self.get_task_note_notion_id(task)
+        def is_highlight_log_already_created(self, task: Task) -> bool:
+            """Checks if a highlight log is already created in Notion."""
+            payload = self.client.notion_payloads.get_highlight_log(task)
+            raw_tasks = self.client.notion_api.query_table(self.client.notes_db_id, payload)
+            return len(raw_tasks) > 0
 
-        notion_task = self.get_notion_task(task)
-        is_task_unprocessed = False
-        if notion_task:
-            is_task_unprocessed = "unprocessed" in notion_task.tags
-        payload = NotionPayloads.update_task_note(task, is_task_unprocessed)
+        def add_highlight_log(self, log: Task) -> dict | None:
+            """Adds a highlight log to the Notes DB in Notion."""
+            payload = self.client.notion_payloads.create_highlight_log(log)
 
-        self.notion_api.update_table_entry(page_id, payload)
+            if not self.is_highlight_log_already_created(log):
+                return self.client.notion_api.create_table_entry(payload)
+            return None
 
-    def is_note_page_already_created(self, title: str, page_type: str) -> bool:
-        """Checks if a note's page is already created in Notion."""
-        payload = NotionPayloads.get_note_page(title, page_type)
-        raw_tasks = self.notion_api.query_table(NT_NOTES_DB_ID, payload)
-        return len(raw_tasks) > 0
+        def get_daily_journal_data(self, date: datetime) -> dict:
+            """"Gets the page data of a daily journal entry for a specific date."""
+            journal_entry = self.client.notion_api.query_table(self.client.notes_db_id,
+                                                               self.client.notion_payloads.get_daily_journal_entry(date)
+                                                               )
+            return journal_entry[0]
 
-    def create_note_page(self, title: str, page_type: str, page_subtype: tuple[str], date: datetime,
-                         content: str) -> dict | None:
-        """Creates a note page in Notion."""
+        def get_daily_journal_content(self, date: datetime) -> list:
+            """Gets the content of a journal entry for a specific date."""
+            journal_entry = self.get_daily_journal_data(date)["id"]
+            return self.client.blocks.get_all_children(journal_entry)
 
-        payload = NotionPayloads.create_note_page(title, page_type, page_subtype, date, content)
+    # Stats-related operations
+    class StatsHandler:
+        def __init__(self, client):
+            self.client = client
 
-        if not self.is_note_page_already_created(title, page_type):
-            return self.notion_api.create_table_entry(payload)
-        return None
+        @staticmethod
+        def _parse_stats_rows(rows: List[dict] | dict) -> List[PersonalStats]:
+            """Parses the raw stats rows from Notion into PersonalStats objects."""
+            if not isinstance(rows, List):
+                rows = [rows]
 
-    def complete_task_note(self, task: Task):
-        """Completes a task in Notion."""
-        page_id = self.get_task_note_notion_id(task)
-        payload = NotionPayloads.complete_task()
-        self.notion_api.update_table_entry(page_id, payload)
+            rows_parsed = []
+            for row in rows:
+                row_properties = row["properties"]
+                rows_parsed.append(
+                    PersonalStats(date=row_properties[StatsHeaders.DATE.value]["date"]["start"],
+                                  weight=row_properties[StatsHeaders.WEIGHT.value]["number"] or 0,
+                                  sleep_time=row_properties[StatsHeaders.SLEEP_TIME.value]["number"] or 0,
+                                  work_time=row_properties[StatsHeaders.WORK_TIME.value]["number"] or 0,
+                                  leisure_time=row_properties[StatsHeaders.LEISURE_TIME.value]["number"] or 0,
+                                  focus_time=row_properties[StatsHeaders.FOCUS_TIME.value]["number"] or 0))
+            return rows_parsed
 
-    def add_expense_log(self, expense_log: ExpenseLog) -> dict:
-        """Adds an expense log to the expenses DB in Notion."""
-        payload = NotionPayloads.create_expense_log(expense_log)
-        return self.notion_api.create_table_entry(payload)
+        def _get_last_row_checked(self) -> Optional[PersonalStats]:
+            """Gets the last checked row from the stats in Notion database."""
+            checked_rows = self.client.notion_api.query_table(self.client.stats_db_id,
+                                                              self.client.notion_payloads.get_checked_stats_rows())
+            if checked_rows:
+                return self._parse_stats_rows(checked_rows[-1])[0]
+            return None
 
-    def add_highlight_log(self, log: Task) -> dict | None:
-        """Adds a highlight log to the Notes DB in Notion."""
-        payload = NotionPayloads.create_highlight_log(log)
+        def get_incomplete_dates(self, limit_date: datetime) -> List[str]:
+            """Gets the dates that are incomplete in the stats database."""
+            initial_date = datetime(limit_date.year, 1, 1)
+            last_checked_row = self._get_last_row_checked()
+            if last_checked_row:
+                current_date = datetime.strptime(last_checked_row.date, "%Y-%m-%d")
+                initial_date = current_date - timedelta(days=14)
 
-        if not self.is_highlight_log_already_created(log):
-            return self.notion_api.create_table_entry(payload)
-        return None
+            dates = []
+            delta = limit_date - initial_date
+            for delta_days in range(delta.days + 1):
+                day = initial_date + timedelta(days=delta_days)
+                dates.append(day.strftime("%Y-%m-%d"))
 
-    @staticmethod
-    def _parse_stats_rows(rows: List[dict] | dict) -> List[PersonalStats]:
-        """Parses the raw stats rows from Notion into PersonalStats objects."""
-        if not isinstance(rows, List):
-            rows = [rows]
+            return dates
 
-        rows_parsed = []
-        for row in rows:
-            row_properties = row["properties"]
-            rows_parsed.append(PersonalStats(date=row_properties[StatsHeaders.DATE.value]["date"]["start"],
-                                             weight=row_properties[StatsHeaders.WEIGHT.value]["number"] or 0,
-                                             sleep_time=row_properties[StatsHeaders.SLEEP_TIME.value]["number"] or 0,
-                                             work_time=row_properties[StatsHeaders.WORK_TIME.value]["number"] or 0,
-                                             leisure_time=row_properties[StatsHeaders.LEISURE_TIME.value]
-                                                                        ["number"] or 0,
-                                             focus_time=row_properties[StatsHeaders.FOCUS_TIME.value]["number"] or 0))
-        return rows_parsed
+        def update(self, stat_data: PersonalStats):
+            """Updates a row in the stats database in Notion."""
+            date_row = self.client.notion_api.query_table(self.client.stats_db_id,
+                                                          self.client.notion_payloads.get_date_rows(stat_data.date))
 
-    def _get_last_stats_row_checked(self) -> Optional[PersonalStats]:
-        """Gets the last checked row from the stats in Notion database."""
-        checked_rows = self.notion_api.query_table(NT_STATS_DB_ID, NotionPayloads.get_checked_stats_rows())
-        if checked_rows:
-            return self._parse_stats_rows(checked_rows[-1])[0]
-        return None
+            if date_row:
+                row_id = date_row[0]["id"]
+                self.client.notion_api.update_table_entry(row_id,
+                                                          self.client.notion_payloads.update_stats_row(stat_data,
+                                                                                                       new_row=False))
+            else:
+                self.client.notion_api.create_table_entry(self.client.notion_payloads.update_stats_row(stat_data,
+                                                                                                       new_row=True))
 
-    def get_incomplete_stats_dates(self, limit_date: datetime) -> List[str]:
-        """Gets the dates that are incomplete in the stats database starting 14 days before the limit date.
+        def get_between_dates(self, start_date: datetime, end_date: datetime) -> List[PersonalStats]:
+            """Gets stats between two dates."""
+            raw_data = self.client.notion_api.query_table(self.client.stats_db_id,
+                                                          self.client.notion_payloads.get_data_between_dates(start_date,
+                                                                                                             end_date))
+            return self._parse_stats_rows(raw_data)
 
-        Args:
-            limit_date: The limit date that is checked to get the incomplete dates.
+    # Block-related operations
+    class BlocksHandler:
+        def __init__(self, client):
+            self.client = client
 
-        Returns:
-            A list of dates in format YYYY-MM-DD.
-        """
-        initial_date = datetime(limit_date.year, 1, 1)
-        last_checked_row = self._get_last_stats_row_checked()
-        if last_checked_row:
-            current_date = datetime.strptime(last_checked_row.date, "%Y-%m-%d")
-            initial_date = current_date - timedelta(days=14)
+        @staticmethod
+        def _parse_block(block: dict) -> str:
+            """Parses a block from Notion into a string."""
+            block_type = block["type"]
+            block_raw_text = block[block_type].get("rich_text", [])
+            block_text = block_raw_text[0]["plain_text"] if block_raw_text else ""
 
-        dates = []
-        delta = limit_date - initial_date
-        for delta_days in range(delta.days + 1):
-            day = initial_date + timedelta(days=delta_days)
-            dates.append(day.strftime("%Y-%m-%d"))
+            if block_type in ["paragraph", "heading_1", "heading_2", "heading_3"]:
+                return block_text
+            elif block_type == "bulleted_list_item":
+                return "- " + block_text
+            elif block_type == "toggle":
+                return "> " + block_text
+            return block_type
 
-        return dates
+        def get_all_children(self, block_id: str) -> list:
+            """Recursively gets the children of a block in Notion."""
+            children = []
+            children_data = self.client.notion_api.get_block_children(block_id)
 
-    def update_stats(self, stat_data: PersonalStats):
-        """Updates a row in the stats database in Notion."""
-        date_row = self.notion_api.query_table(NT_STATS_DB_ID, NotionPayloads.get_date_rows(stat_data.date))
+            for child in children_data.get("results", []):
+                parsed_child: list[str | list] = [self._parse_block(child)]
+                children.append(parsed_child)
 
-        if date_row:
-            row_id = date_row[0]["id"]
-            self.notion_api.update_table_entry(row_id, NotionPayloads.update_stats_row(stat_data, new_row=False))
-        else:
-            self.notion_api.create_table_entry(NotionPayloads.update_stats_row(stat_data, new_row=True))
+                if child.get("has_children", False):
+                    parsed_child.append(self.get_all_children(child["id"]))
 
-    def get_stats_between_dates(self, start_date: datetime, end_date: datetime) -> List[PersonalStats]:
-        raw_data = self.notion_api.query_table(NT_STATS_DB_ID, NotionPayloads.get_data_between_dates(start_date,
-                                                                                                     end_date))
-        return self._parse_stats_rows(raw_data)
+            return children
 
-    @staticmethod
-    def _parse_notion_block(block: dict) -> str:
-        """Parses a block from Notion into a string."""
-        block_type = block["type"]
-        block_raw_text = block[block_type].get("rich_text", [])
-        block_text = block_raw_text[0]["plain_text"] if block_raw_text else ""
+    class ExpensesHandler:
+        def __init__(self, client):
+            self.client = client
 
-        if block_type in ["paragraph", "heading_1", "heading_2", "heading_3"]:
-            return block_text
-        elif block_type == "bulleted_list_item":
-            return "- " + block_text
-        elif block_type == "toggle":
-            return "> " + block_text
-        return block_type
-
-    def _get_all_block_children(self, block_id: str) -> list:
-        """Recursively gets the children of a block in Notion.
-
-        Args:
-            block_id: The ID of the block to get the children from.
-
-        Returns:
-            A list of children of the block.
-        """
-        children = []
-        children_data = self.notion_api.get_block_children(block_id)
-
-        for child in children_data.get("results", []):
-            parsed_child: list[str | list] = [self._parse_notion_block(child)]
-            children.append(parsed_child)
-
-            if child.get("has_children", False):
-                parsed_child.append(self._get_all_block_children(child["id"]))
-
-        return children
-
-    def get_daily_journal_data(self, date: datetime) -> dict:
-        """"Gets the page data of a daily journal entry for a specific date."""
-        journal_entry = self.notion_api.query_table(NT_NOTES_DB_ID, NotionPayloads.get_daily_journal_entry(date))
-        return journal_entry[0]
-
-    def get_daily_journal_content(self, date: datetime) -> list:
-        """Gets the content of a journal entry for a specific date."""
-        journal_entry = self.get_daily_journal_data(date)["id"]
-        return self._get_all_block_children(journal_entry)
+        def add_expense_log(self, expense_log: ExpenseLog) -> dict:
+            """Adds an expense log to the expenses DB in Notion."""
+            payload = self.client.notion_payloads.create_expense_log(expense_log)
+            return self.client.notion_api.create_table_entry(payload)

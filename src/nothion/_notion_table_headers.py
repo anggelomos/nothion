@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class ExpensesHeaders(Enum):
-    PRODUCT = "product"
+    PRODUCT = "item"
     EXPENSE = "expense"
     DATE = "date"
 

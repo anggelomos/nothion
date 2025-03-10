@@ -19,7 +19,7 @@ def notion_client(notion_info):
 
 
 def test_get_active_tasks(notion_client):
-    active_tasks = notion_client.get_active_tasks()
+    active_tasks = notion_client.tasks.get_active_tasks()
 
     assert len(active_tasks) > 0
     assert isinstance(active_tasks, List) and all(isinstance(i, Task) for i in active_tasks)
@@ -39,7 +39,7 @@ def test_get_notion_task(notion_client):
                          due_date="9999-09-09",
                          )
 
-    task = notion_client.get_notion_task(expected_task)
+    task = notion_client.tasks.get_notion_task(expected_task)
 
     assert task == expected_task
 
@@ -51,7 +51,7 @@ def test_get_task_that_does_not_exist(notion_client):
                        status=2,
                        title="Test Task That Does Not Exist",
                        )
-    task = notion_client.get_notion_task(search_task)
+    task = notion_client.tasks.get_notion_task(search_task)
 
     assert task is None
 
@@ -64,7 +64,7 @@ def test_get_task_with_missing_properties(notion_client):
                          title="Test Existing Task With Missing Data",
                          )
 
-    task = notion_client.get_notion_task(expected_task)
+    task = notion_client.tasks.get_notion_task(expected_task)
 
     assert task == expected_task
 
@@ -77,7 +77,7 @@ def test_get_notion_id_by_ticktick_id(notion_client):
                 title="Test Existing Task With Missing Data",
                 )
 
-    notion_id = notion_client.get_task_notion_id(task)
+    notion_id = notion_client.tasks.get_notion_id(task)
 
     assert notion_id == expected_notion_id
 
@@ -90,7 +90,7 @@ def test_get_notion_id_by_etag(notion_client):
                 title="Test Existing Task With Missing Data",
                 )
 
-    notion_id = notion_client.get_task_notion_id(task)
+    notion_id = notion_client.tasks.get_notion_id(task)
 
     assert notion_id == expected_notion_id
 
@@ -103,7 +103,7 @@ def test_get_notion_id_by_etag(notion_client):
     ("0testtask0", False),
 ])
 def test_is_task_already_created(notion_client, task_etag, expected_status):
-    is_task_created = notion_client.is_task_already_created(Task(ticktick_etag=task_etag, created_date="", title="",
+    is_task_created = notion_client.tasks.is_already_created(Task(ticktick_etag=task_etag, created_date="", title="",
                                                                  ticktick_id=""))
 
     assert is_task_created == expected_status
@@ -123,13 +123,13 @@ def test_create_task(notion_client):
                          due_date="9999-09-09",
                          )
 
-    notion_client.create_task(expected_task)
+    notion_client.tasks.create(expected_task)
 
-    task = notion_client.get_notion_task(expected_task)
+    task = notion_client.tasks.get_notion_task(expected_task)
     assert task == expected_task
 
-    notion_client.delete_task(expected_task)
-    assert notion_client.is_task_already_created(expected_task) is False
+    notion_client.tasks.delete(expected_task)
+    assert notion_client.tasks.is_already_created(expected_task) is False
 
 
 def test_complete_task(notion_client):
@@ -146,14 +146,14 @@ def test_complete_task(notion_client):
                          due_date="9999-09-09",
                          )
 
-    notion_client.create_task(expected_task)
-    notion_client.complete_task(expected_task)
+    notion_client.tasks.create(expected_task)
+    notion_client.tasks.complete(expected_task)
 
-    task = notion_client.get_notion_task(expected_task)
+    task = notion_client.tasks.get_notion_task(expected_task)
     assert task.status == 2
 
-    notion_client.delete_task(expected_task)
-    assert notion_client.is_task_already_created(expected_task) is False
+    notion_client.tasks.delete(expected_task)
+    assert notion_client.tasks.is_already_created(expected_task) is False
 
 
 def test_update_task(notion_client):
@@ -169,9 +169,9 @@ def test_update_task(notion_client):
                          due_date="9999-09-09",
                          )
 
-    original_task = notion_client.get_notion_task(expected_task)
-    notion_client.update_task(expected_task)
-    updated_task = notion_client.get_notion_task(expected_task)
+    original_task = notion_client.tasks.get_notion_task(expected_task)
+    notion_client.tasks.update(expected_task)
+    updated_task = notion_client.tasks.get_notion_task(expected_task)
 
     assert updated_task == expected_task
     assert updated_task.title == original_task.title
@@ -193,13 +193,13 @@ def test_create_task_note(notion_client):
                          due_date="9999-09-09",
                          )
 
-    notion_client.create_task_note(expected_task)
+    notion_client.notes.create_task(expected_task)
 
-    task = notion_client.get_notion_task_note(expected_task)
+    task = notion_client.notes.get_task_note(expected_task)
     assert task == expected_task
 
-    notion_client.delete_task_note(expected_task)
-    assert notion_client.is_task_note_already_created(expected_task) is False
+    notion_client.notes.delete_task(expected_task)
+    assert notion_client.notes.is_task_already_created(expected_task) is False
 
 
 def test_complete_task_note(notion_client):
@@ -216,14 +216,14 @@ def test_complete_task_note(notion_client):
                          due_date="9999-09-09",
                          )
 
-    notion_client.create_task_note(expected_task)
-    notion_client.complete_task_note(expected_task)
+    notion_client.notes.create_task(expected_task)
+    notion_client.notes.complete_task(expected_task)
 
-    task = notion_client.get_notion_task_note(expected_task)
+    task = notion_client.notes.get_task_note(expected_task)
     assert task.status == 2
 
-    notion_client.delete_task_note(expected_task)
-    assert notion_client.is_task_note_already_created(expected_task) is False
+    notion_client.notes.delete_task(expected_task)
+    assert notion_client.notes.is_task_already_created(expected_task) is False
 
 
 def test_update_task_note(notion_client):
@@ -239,9 +239,9 @@ def test_update_task_note(notion_client):
                          due_date="9999-09-09",
                          )
 
-    original_task = notion_client.get_notion_task_note(expected_task)
-    notion_client.update_task_note(expected_task)
-    updated_task = notion_client.get_notion_task_note(expected_task)
+    original_task = notion_client.notes.get_task_note(expected_task)
+    notion_client.notes.update_task(expected_task)
+    updated_task = notion_client.notes.get_task_note(expected_task)
 
     assert updated_task == expected_task
     assert updated_task.title == original_task.title
@@ -251,7 +251,7 @@ def test_update_task_note(notion_client):
 def test_add_expense_log(notion_client):
     expected_expense_log = ExpenseLog(date="9999-09-09", expense=99.9, product="Test Expense Log")
 
-    expense_log = notion_client.add_expense_log(expected_expense_log)
+    expense_log = notion_client.expenses.add_expense_log(expected_expense_log)
 
     expense_log_entry = notion_client.notion_api.get_table_entry(expense_log["id"])
     expense_log_properties = expense_log_entry["properties"]
@@ -268,11 +268,11 @@ def test_add_highlight_log(notion_client):
                                   ticktick_id="726db85349f01aec349fdb83", created_date=datetime.utcnow().isoformat(),
                                   ticktick_etag="3c02ab1d", tags=("highlight",))
 
-    highlight_log = notion_client.add_highlight_log(expected_highlight_log)
+    highlight_log = notion_client.notes.add_highlight_log(expected_highlight_log)
 
     highlight_log_entry = notion_client.notion_api.get_table_entry(highlight_log["id"])
     highlight_log_properties = highlight_log_entry["properties"]
-    assert notion_client.is_highlight_log_already_created(expected_highlight_log)
+    assert notion_client.notes.is_highlight_log_already_created(expected_highlight_log)
     assert highlight_log_properties[NotesHeaders.TYPE.value]["select"]["name"] in expected_highlight_log.tags
     assert (highlight_log_properties[NotesHeaders.NOTE.value]["title"][0]["text"]["content"] ==
             expected_highlight_log.title)
@@ -289,7 +289,7 @@ def test_add_highlight_log(notion_client):
 def test_get_incomplete_stats_dates(notion_client):
     stats_date = datetime.now() + timedelta(days=2)
 
-    incomplete_dates = notion_client.get_incomplete_stats_dates(stats_date)
+    incomplete_dates = notion_client.stats.get_incomplete_dates(stats_date)
 
     assert len(incomplete_dates) >= 2
     assert (isinstance(incomplete_dates, List) and
@@ -300,7 +300,7 @@ def test_create_stats_row(notion_client):
     stats = PersonalStats(date="9999-09-09", work_time=1.0, sleep_time=2.0, leisure_time=3.0, focus_time=4.0,
                           weight=5.0)
 
-    notion_client.update_stats(stats)
+    notion_client.stats.update(stats)
 
     date_row = notion_client.notion_api.query_table(NT_STATS_DB_ID, NotionPayloads.get_date_rows("9999-09-09"))[0]
     date_row_properties = date_row["properties"]
@@ -322,9 +322,9 @@ def test_update_stats_row(notion_client):
                                   leisure_time=99.9,
                                   focus_time=random.random())
 
-    original_stat = notion_client._parse_stats_rows(notion_api.get_table_entry("c568738e82a24b258071e5412db89a2f"))[0]
-    notion_client.update_stats(expected_stat)
-    updated_stat = notion_client._parse_stats_rows(notion_api.get_table_entry("c568738e82a24b258071e5412db89a2f"))[0]
+    original_stat = notion_client.stats._parse_stats_rows(notion_api.get_table_entry("c568738e82a24b258071e5412db89a2f"))[0]
+    notion_client.stats.update(expected_stat)
+    updated_stat = notion_client.stats._parse_stats_rows(notion_api.get_table_entry("c568738e82a24b258071e5412db89a2f"))[0]
 
     assert updated_stat == expected_stat
     assert updated_stat.date == original_stat.date
@@ -346,7 +346,7 @@ def test_update_stats_row(notion_client):
     (date(2023, 1, 3), date(2023, 1, 1), []),
 ])
 def test_get_stats_between_dates(notion_client, start_date, end_date, expected_stats):
-    stats = notion_client.get_stats_between_dates(start_date, end_date)
+    stats = notion_client.stats.get_between_dates(start_date, end_date)
     assert stats == expected_stats
 
 
@@ -364,7 +364,7 @@ def test_get_stats_between_dates(notion_client, start_date, end_date, expected_s
     ("test-wrong-title", "test-wrong-page-type", False),
 ])
 def test_is_note_page_already_created(notion_client, title, page_type, expected_result):
-    is_note_page_created = notion_client.is_note_page_already_created(title, page_type)
+    is_note_page_created = notion_client.notes.is_page_already_created(title, page_type)
     assert is_note_page_created == expected_result
 
 
@@ -372,7 +372,7 @@ def test_create_note_page(notion_client):
     note_page = ["test-note-page", "note", ("test",), datetime(2000, 1, 1),
                  "test note page content"]
 
-    notion_client.create_note_page(*note_page)
+    notion_client.notes.create_page(*note_page)
 
     note_page_payload = NotionPayloads.get_note_page(note_page[0], note_page[1])
     created_note_page = notion_client.notion_api.query_table(NT_NOTES_DB_ID, note_page_payload)[0]
@@ -390,7 +390,7 @@ def test_get_daily_journal_data(notion_client):
     expected_object = "page"
     expected_id = EXISTING_TEST_JOURNAL_PAGE_ID
 
-    journal_data = notion_client.get_daily_journal_data(datetime(1900, 1, 1))
+    journal_data = notion_client.notes.get_daily_journal_data(datetime(1900, 1, 1))
 
     assert journal_data.get("object", "") == expected_object
     assert journal_data.get("id", "").replace("-", "") == expected_id
@@ -400,7 +400,7 @@ def test_get_daily_journal_content(notion_client):
     expected_journal_content = [['test-header-1'], ['test-header-2'], ['test-header-2'], ['test-paragraph'],
                                 ['- test-bullet'], ['> test-toggle']]
 
-    journal_content = notion_client.get_daily_journal_content(datetime(1900, 1, 1))
+    journal_content = notion_client.notes.get_daily_journal_content(datetime(1900, 1, 1))
 
     assert len(journal_content) == len(expected_journal_content)
     assert journal_content == expected_journal_content

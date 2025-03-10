@@ -12,6 +12,11 @@ from .conftest import (TEST_TASK, TEST_STAT, TEST_EXPENSE_LOG, EXISTING_TEST_TAS
                        EXISTING_TEST_JOURNAL_PAGE_ID)
 
 
+notion_payloads = NotionPayloads(tasks_db_id=NT_TASKS_DB_ID, 
+                                 notes_db_id=NT_NOTES_DB_ID, 
+                                 stats_db_id=NT_STATS_DB_ID, 
+                                 expenses_db_id=NT_EXPENSES_DB_ID)
+
 @pytest.fixture(scope="module")
 def notion_api(notion_info):
     return NotionAPI(notion_info["auth_secret"])
@@ -19,23 +24,23 @@ def notion_api(notion_info):
 
 @pytest.mark.parametrize("payload", [
     # Test with tasks database
-    (NotionPayloads.create_task(TEST_TASK)),
+    (notion_payloads.create_task(TEST_TASK)),
 
     # Test with notes database
-    (NotionPayloads.create_task_note(TEST_TASK)),
+    (notion_payloads.create_task_note(TEST_TASK)),
 
     # Test with stats database
-    (NotionPayloads.update_stats_row(TEST_STAT, new_row=True)),
+    (notion_payloads.update_stats_row(TEST_STAT, new_row=True)),
 
     # Test with expenses database
-    (NotionPayloads.create_expense_log(TEST_EXPENSE_LOG)),
+    (notion_payloads.create_expense_log(TEST_EXPENSE_LOG)),
 ])
 def test_create_table_entry(notion_api, payload):
     table_entry_data = notion_api.create_table_entry(payload)
 
     table_entry = notion_api.get_table_entry(table_entry_data["id"])
 
-    notion_api.update_table_entry(table_entry["id"], NotionPayloads.delete_table_entry())
+    notion_api.update_table_entry(table_entry["id"], notion_payloads.delete_table_entry())
 
 
 @pytest.mark.parametrize("database_id, query, expected_property, expected_value", [

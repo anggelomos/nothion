@@ -4,12 +4,16 @@ from typing import Optional
 
 from tickthon import Task, ExpenseLog
 
-from nothion._config import NT_TASKS_DB_ID, NT_EXPENSES_DB_ID, NT_STATS_DB_ID, NT_NOTES_DB_ID
 from nothion._notion_table_headers import TasksHeaders, ExpensesHeaders, StatsHeaders, NotesHeaders
 from nothion.personal_stats_model import PersonalStats
 
 
 class NotionPayloads:
+    def __init__(self, tasks_db_id: str, expenses_db_id: str, stats_db_id: str, notes_db_id: str):
+        self.tasks_db_id = tasks_db_id
+        self.expenses_db_id = expenses_db_id
+        self.stats_db_id = stats_db_id
+        self.notes_db_id = notes_db_id
 
     @staticmethod
     def get_active_tasks() -> dict:
@@ -48,16 +52,14 @@ class NotionPayloads:
 
         return payload
 
-    @classmethod
-    def create_task(cls, task: Task) -> str:
-        payload = cls._base_task_payload(task)
-        payload["parent"] = {"database_id": NT_TASKS_DB_ID}
+    def create_task(self, task: Task) -> str:
+        payload = self._base_task_payload(task)
+        payload["parent"] = {"database_id": self.tasks_db_id}
         return json.dumps(payload)
 
-    @classmethod
-    def create_task_note(cls, task: Task) -> str:
-        payload = cls._base_task_payload(task)
-        payload["parent"] = {"database_id": NT_NOTES_DB_ID}
+    def create_task_note(self, task: Task) -> str:
+        payload = self._base_task_payload(task)
+        payload["parent"] = {"database_id": self.notes_db_id}
         payload["properties"][TasksHeaders.TAGS.value]["multi_select"].append({"name": "unprocessed"})
         return json.dumps(payload)
 
@@ -104,10 +106,9 @@ class NotionPayloads:
 
         return payload
 
-    @staticmethod
-    def create_expense_log(expense_log: ExpenseLog) -> str:
+    def create_expense_log(self, expense_log: ExpenseLog) -> str:
         payload = {
-            "parent": {"database_id": NT_EXPENSES_DB_ID},
+            "parent": {"database_id": self.expenses_db_id},
             "properties": {
                 ExpensesHeaders.PRODUCT.value: {"title": [{"text": {"content": expense_log.product}}]},
                 ExpensesHeaders.EXPENSE.value: {"number": expense_log.expense},
@@ -138,10 +139,9 @@ class NotionPayloads:
 
         return payload
 
-    @classmethod
-    def create_highlight_log(cls, log: Task) -> str:
+    def create_highlight_log(self, log: Task) -> str:
         payload = {
-            "parent": {"database_id": NT_NOTES_DB_ID},
+            "parent": {"database_id": self.notes_db_id},
             "icon": {"type": "emoji", "emoji": "✨"},
             "properties": {
                 NotesHeaders.NOTE.value: {"title": [{"text": {"content": log.title}}]},
@@ -175,8 +175,7 @@ class NotionPayloads:
     def get_date_rows(date: str) -> dict:
         return {"filter": {"and": [{"property": "date", "date": {"equals": date}}]}}
 
-    @staticmethod
-    def update_stats_row(stat: PersonalStats, new_row: bool) -> str:
+    def update_stats_row(self, stat: PersonalStats, new_row: bool) -> str:
         payload = {
             "properties": {
                 StatsHeaders.DATE.value: {"date": {"start": stat.date}},
@@ -190,7 +189,7 @@ class NotionPayloads:
         }
 
         if new_row:
-            payload["parent"] = {"database_id": NT_STATS_DB_ID}
+            payload["parent"] = {"database_id": self.stats_db_id}
             payload["properties"][StatsHeaders.SLEEP_TIME.value] = {"number": stat.sleep_time}
 
         return json.dumps(payload)
@@ -203,8 +202,7 @@ class NotionPayloads:
                                    ]},
                 "page_size": 1}
 
-    @classmethod
-    def create_note_page(cls, title: str, page_type: str, page_subtype: tuple[str], date: datetime,
+    def create_note_page(self, title: str, page_type: str, page_subtype: tuple[str], date: datetime,
                          content: str) -> str:
         content_block = {"object": "block",
                          "type": "paragraph",
@@ -212,7 +210,7 @@ class NotionPayloads:
                          }
 
         payload = {
-            "parent": {"database_id": NT_NOTES_DB_ID},
+            "parent": {"database_id": self.notes_db_id},
             "properties": {
                 NotesHeaders.NOTE.value: {"title": [{"text": {"content": title}}]},
                 NotesHeaders.TYPE.value: {"select": {"name": page_type}},
@@ -232,4 +230,6 @@ class NotionPayloads:
                             {"property": NotesHeaders.TYPE.value,
                              "select": {"equals": page_type}
                              },
-                            ]}}
+                            ]
+                        }
+                }
