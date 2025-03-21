@@ -10,31 +10,36 @@ pip install nothion
 ```python
 from nothion import NotionClient
 
-client = NotionClient()
-client.get_active_tasks()
+client = NotionClient(auth_secret="your_auth_token")
+client.tasks.get_active_tasks()
 ```
 
 ## Features
-- get_active_tasks()
-- get_task_by_etag(task_etag)
-- get_task_notion_id(task_id)
-- is_task_already_created(ticktick_id, due_date)
-- create_task(Task)
-- update_task(Task)
-- delete_task(Task)
-- complete_task(Task)
-- create_task_note(Task)
-- update_task_note(Task)
-- delete_task_note(Task)
-- complete_task_note(Task)
-- add_expense_log(ExpenseLog)
-- get_incomplete_stats_dates(date)
-- update_stat(PersonalStats)
-- get_stats_between_dates(start_date, end_date)
 
+### Tasks Handler
+- get_active_tasks()
+- get_notion_task(ticktick_task: Task)
+- get_notion_id(ticktick_task: Task)
+- is_already_created(task: Task)
+- create(task: Task)
+- update(task: Task)
+- complete(task: Task)
+- delete(task: Task)
+
+### Notes Handler
+- is_page_already_created(title: str, page_type: str)
+- create_page(title: str, page_type: str, page_subtype: tuple[str], date: datetime, content: str)
+
+### Stats Handler
+- get_incomplete_dates(limit_date: datetime)
+- update(stat_data: PersonalStats, overwrite_stats: bool = False)
+- get_between_dates(start_date: datetime, end_date: datetime)
+
+### Expenses Handler
+- add_expense_log(expense_log: ExpenseLog)
 
 ## Personal Stats model
-This packages uses a custom attrs model to store personal stats, it has the following attributes:
+This package uses a custom attrs model to store personal stats, it has the following attributes:
 
 PersonalStats:
 - time_stats: TimeStats
@@ -46,7 +51,7 @@ TimeStats:
 - focus_time: float
 
 ## ExpenseLog model
-This packages uses a custom attrs model to store expense log data, it has the following attributes:
+This package uses a custom attrs model to store expense log data, it has the following attributes:
 
 ExpenseLog:
 - fecha: str

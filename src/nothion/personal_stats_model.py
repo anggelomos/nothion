@@ -7,14 +7,16 @@ class PersonalStats:
 
     Attributes:
         date: The date of the stats in format YYYY-MM-DD.
-        work_time: Personal work time.
-        leisure_time: Personal leisure time.
-        focus_time: Personal focus time.
-        weight: Personal weight.
+        all other attributes are self-explanatory.
     """
     date: str
+    focus_total_time: float
+    focus_active_time: float
     work_time: float
     leisure_time: float
-    focus_time: float
-    sleep_time: float = 0.0
+    sleep_time_amount: float = 0.0
+    fall_asleep_time: float = 0.0
+    sleep_score: float = 0.0
     weight: float = 0.0
+    steps: float = 0.0
+    water_cups: int = 0

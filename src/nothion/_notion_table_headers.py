@@ -24,11 +24,16 @@ class TasksHeaders(Enum):
 class StatsHeaders(Enum):
     COMPLETED = "completed"
     DATE = "date"
-    WORK_TIME = "work time"
-    SLEEP_TIME = "sleep time"
-    FOCUS_TIME = "focus time"
-    LEISURE_TIME = "leisure time"
-    WEIGHT = "weight"
+    FOCUS_TOTAL_TIME = "ftt - focus time total"
+    FOCUS_ACTIVE_TIME = "fta - focus time active"
+    WORK_TIME = "ftr - focus time rescuetime"
+    LEISURE_TIME = "lt - leisure time"
+    SLEEP_TIME_AMOUNT = "sa - sleep amount"
+    FALL_ASLEEP_TIME = "st - fall asleep time"
+    SLEEP_SCORE = "ss - sleep score"
+    WEIGHT = "kg - weight"
+    STEPS = "stp - steps"
+    WATER_CUPS = "wc - water cups"
 
 
 class NotesHeaders(Enum):

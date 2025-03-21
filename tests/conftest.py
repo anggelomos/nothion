@@ -24,10 +24,13 @@ TEST_TASK = Task(ticktick_id="60c8d7b1e9b80e0595353bc6",
                  )
 
 TEST_STAT = PersonalStats(date="9999-09-09",
-                          work_time=1.0,
-                          leisure_time=2.0,
-                          focus_time=3.0,
-                          weight=0.0)
+                          focus_total_time=1.0,
+                          focus_active_time=2.0,
+                          work_time=3.0,
+                          leisure_time=4.0,
+                          sleep_time_amount=5.0,
+                          fall_asleep_time=6.0,
+                          )
 
 TEST_EXPENSE_LOG = ExpenseLog(date="9999-09-09", expense=999.9, product="Test product")
 

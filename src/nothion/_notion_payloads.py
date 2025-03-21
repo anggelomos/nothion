@@ -175,32 +175,46 @@ class NotionPayloads:
     def get_date_rows(date: str) -> dict:
         return {"filter": {"and": [{"property": "date", "date": {"equals": date}}]}}
 
-    def update_stats_row(self, stat: PersonalStats, new_row: bool) -> str:
-        payload = {
+    def update_stats_row(self,
+                         stat: PersonalStats,
+                         old_stats: PersonalStats | None = None,
+                         new_row: bool = False,
+                         overwrite_stats: bool = False) -> str:
+        payload: dict = {
             "properties": {
-                StatsHeaders.DATE.value: {"date": {"start": stat.date}},
-                StatsHeaders.WEIGHT.value: {"number": stat.weight},
-                StatsHeaders.WORK_TIME.value: {"number": stat.work_time},
-                # Sleep time is currently logged manually, so it is commented so that it is not overwritten.
-                # StatsHeaders.SLEEP_TIME.value: {"number": stat.sleep_time},
-                StatsHeaders.LEISURE_TIME.value: {"number": stat.leisure_time},
-                StatsHeaders.FOCUS_TIME.value: {"number": stat.focus_time},
+                StatsHeaders.DATE.value: {"date": {"start": stat.date}}
             }
         }
 
+        if new_row or overwrite_stats:
+            payload["properties"].update({
+                StatsHeaders.FOCUS_TOTAL_TIME.value: {"number": stat.focus_total_time},
+                StatsHeaders.FOCUS_ACTIVE_TIME.value: {"number": stat.focus_active_time},
+                StatsHeaders.WORK_TIME.value: {"number": stat.work_time},
+                StatsHeaders.LEISURE_TIME.value: {"number": stat.leisure_time},
+                StatsHeaders.SLEEP_TIME_AMOUNT.value: {"number": stat.sleep_time_amount},
+                StatsHeaders.FALL_ASLEEP_TIME.value: {"number": stat.fall_asleep_time},
+                StatsHeaders.SLEEP_SCORE.value: {"number": stat.sleep_score},
+                StatsHeaders.WEIGHT.value: {"number": stat.weight},
+                StatsHeaders.STEPS.value: {"number": stat.steps},
+                StatsHeaders.WATER_CUPS.value: {"number": stat.water_cups},
+            })
+        elif old_stats:
+            stats_fields = [header for header in StatsHeaders if header != StatsHeaders.DATE]
+
+            for header in stats_fields:
+                attr_name = header.name.lower()
+
+                old_value = getattr(old_stats, attr_name, None)
+                new_value = getattr(stat, attr_name, None)
+
+                if old_value and not new_value:
+                    payload["properties"][header.value] = {"number": old_value}
+
         if new_row:
             payload["parent"] = {"database_id": self.stats_db_id}
-            payload["properties"][StatsHeaders.SLEEP_TIME.value] = {"number": stat.sleep_time}
 
         return json.dumps(payload)
-
-    @staticmethod
-    def get_daily_journal_entry(journal_date: datetime) -> dict:
-        return {"filter": {"and": [{"property": "Type", "select": {"equals": "journal"}},
-                                   {"property": "Sub-type", "multi_select": {"contains": "daily"}},
-                                   {"property": "Due date", "date": {"equals": journal_date.strftime("%Y-%m-%d")}}
-                                   ]},
-                "page_size": 1}
 
     def create_note_page(self, title: str, page_type: str, page_subtype: tuple[str], date: datetime,
                          content: str) -> str:

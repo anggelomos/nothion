@@ -61,7 +61,7 @@ def test_create_table_entry(notion_api, payload):
 
     # Test with expenses database
     (NT_EXPENSES_DB_ID,
-     {"filter": {"and": [{"property": "product", "rich_text": {"equals": "Test Existing Expense Log"}}]}},
+     {"filter": {"and": [{"property": "item", "rich_text": {"equals": "Test Existing Expense Log"}}]}},
      "id", "36de61f8-b24c-49e2-86bb-5b0aca9740ab"),
 ])
 def test_query_table(notion_api, database_id, query, expected_property, expected_value):
@@ -99,11 +99,11 @@ def test_query_with_multiple_pages(notion_api, query, expected_pages):
      json.dumps({"properties": {"Focus time": {"number": random.random()}}})),
 
     # Test with stats database
-    (EXISTING_TEST_STAT_PAGE_ID, "work time", "focus time",
-     json.dumps({"properties": {"focus time": {"number": random.random()}}})),
+    (EXISTING_TEST_STAT_PAGE_ID, "ftr - focus time rescuetime", "fta - focus time active",
+     json.dumps({"properties": {"fta - focus time active": {"number": random.random()}}})),
 
     # Test with expenses database
-    (EXISTING_TEST_EXPENSE_LOG_PAGE_ID, "product", "expense",
+    (EXISTING_TEST_EXPENSE_LOG_PAGE_ID, "item", "expense",
      json.dumps({"properties": {"expense": {"number": random.random()}}})),
 ])
 def test_update_table_entry(notion_api, stable_property, updated_property, page_id, payload):
