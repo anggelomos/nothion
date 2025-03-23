@@ -6,11 +6,12 @@ from uuid import uuid4
 import pytest
 from nothion import NotionClient, PersonalStats
 from nothion._config import NT_STATS_DB_ID, NT_NOTES_DB_ID
-from tickthon import Task, ExpenseLog
+from tickthon import Task
 
 from nothion._notion_parsers import NotionParsers
 from nothion._notion_payloads import NotionPayloads
 from nothion._notion_table_headers import ExpensesHeaders, StatsHeaders, NotesHeaders
+from nothion.data_models.expense_log import ExpenseLog
 from tests.conftest import EXISTING_TEST_JOURNAL_PAGE_ID
 
 
@@ -256,13 +257,13 @@ def test_update_stats_row(notion_client):
 @pytest.mark.parametrize("start_date, end_date, expected_stats", [
     # Test start date before end date
     (date(2023, 1, 1), date(2023, 1, 3),
-     [PersonalStats(date='2023-01-01', work_time=2.03, leisure_time=6.5, focus_total_time=0, focus_active_time=1.97, weight=0),
-      PersonalStats(date='2023-01-02', work_time=3.24, leisure_time=3.24, focus_total_time=3.12, focus_active_time=3.12, weight=0),
-      PersonalStats(date='2023-01-03', work_time=7.57, leisure_time=1.51, focus_total_time=6.33, focus_active_time=7.42, weight=0)]),
+     [PersonalStats(date='2023-01-01', work_time=2.03, leisure_time=6.5, focus_total_time=0, focus_active_time=1.97, weight=0, water_cups=0),
+      PersonalStats(date='2023-01-02', work_time=3.24, leisure_time=3.24, focus_total_time=3.12, focus_active_time=3.12, weight=0, water_cups=0),
+      PersonalStats(date='2023-01-03', work_time=7.57, leisure_time=1.51, focus_total_time=6.33, focus_active_time=7.42, weight=0, water_cups=0)]),
 
     # Test start date equal to end date
     (date(2023, 1, 1), date(2023, 1, 1),
-     [PersonalStats(date='2023-01-01', work_time=2.03, leisure_time=6.5, focus_total_time=0, focus_active_time=1.97, weight=0)]),
+     [PersonalStats(date='2023-01-01', work_time=2.03, leisure_time=6.5, focus_total_time=0, focus_active_time=1.97, weight=0, water_cups=0)]),
 
     # Test start date after end date
     (date(2023, 1, 3), date(2023, 1, 1), []),

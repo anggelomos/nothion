@@ -2,10 +2,11 @@ import json
 from datetime import datetime
 from typing import Optional
 
-from tickthon import Task, ExpenseLog
+from tickthon import Task
 
 from nothion._notion_table_headers import TasksHeaders, ExpensesHeaders, StatsHeaders, NotesHeaders
-from nothion.personal_stats_model import PersonalStats
+from nothion.data_models.expense_log import ExpenseLog
+from nothion.data_models.personal_stats import PersonalStats
 
 
 class NotionPayloads:
@@ -57,23 +58,9 @@ class NotionPayloads:
         payload["parent"] = {"database_id": self.tasks_db_id}
         return json.dumps(payload)
 
-    def create_task_note(self, task: Task) -> str:
-        payload = self._base_task_payload(task)
-        payload["parent"] = {"database_id": self.notes_db_id}
-        payload["properties"][TasksHeaders.TAGS.value]["multi_select"].append({"name": "unprocessed"})
-        return json.dumps(payload)
-
     @classmethod
     def update_task(cls, task: Task) -> str:
         return json.dumps(cls._base_task_payload(task))
-
-    @classmethod
-    def update_task_note(cls, task: Task, is_task_unprocessed: bool) -> str:
-        payload = cls._base_task_payload(task)
-        if is_task_unprocessed:
-            payload["properties"][TasksHeaders.TAGS.value]["multi_select"].append({"name": "unprocessed"})
-
-        return json.dumps(payload)
 
     @classmethod
     def complete_task(cls) -> str:
@@ -113,40 +100,6 @@ class NotionPayloads:
                 ExpensesHeaders.PRODUCT.value: {"title": [{"text": {"content": expense_log.product}}]},
                 ExpensesHeaders.EXPENSE.value: {"number": expense_log.expense},
                 ExpensesHeaders.DATE.value: {"date": {"start": expense_log.date}}
-            }
-        }
-
-        return json.dumps(payload)
-
-    @staticmethod
-    def get_highlight_log(log: Task) -> dict:
-        """Payload to get a highlight note.
-
-        Args:
-            log: The task to search for.
-        """
-        date_without_seconds = datetime.fromisoformat(log.created_date).replace(second=0, microsecond=0).isoformat()
-        payload = {"filter": {
-            "and": [{"property": NotesHeaders.NOTE.value,
-                     "rich_text": {"equals": log.title}},
-                    {"property": NotesHeaders.TYPE.value,
-                     "select": {"equals": "highlight"}
-                     },
-                    {"property": NotesHeaders.DUE_DATE.value,
-                     "date": {"equals": date_without_seconds}
-                     },
-                    ]}}
-
-        return payload
-
-    def create_highlight_log(self, log: Task) -> str:
-        payload = {
-            "parent": {"database_id": self.notes_db_id},
-            "icon": {"type": "emoji", "emoji": "✨"},
-            "properties": {
-                NotesHeaders.NOTE.value: {"title": [{"text": {"content": log.title}}]},
-                NotesHeaders.TYPE.value: {"select": {"name": "highlight"}},
-                NotesHeaders.DUE_DATE.value: {"date": {"start": log.created_date}}
             }
         }
 

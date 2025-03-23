@@ -8,8 +8,7 @@ from nothion._config import NT_TASKS_DB_ID, NT_NOTES_DB_ID, NT_STATS_DB_ID, NT_E
 from nothion._notion_api import NotionAPI
 from nothion._notion_payloads import NotionPayloads
 from .conftest import (TEST_TASK, TEST_STAT, TEST_EXPENSE_LOG, EXISTING_TEST_TASK_PAGE_ID,
-                       EXISTING_TEST_TASK_NOTE_PAGE_ID, EXISTING_TEST_STAT_PAGE_ID, EXISTING_TEST_EXPENSE_LOG_PAGE_ID,
-                       EXISTING_TEST_JOURNAL_PAGE_ID)
+                       EXISTING_TEST_STAT_PAGE_ID, EXISTING_TEST_EXPENSE_LOG_PAGE_ID, EXISTING_TEST_JOURNAL_PAGE_ID)
 
 
 notion_payloads = NotionPayloads(tasks_db_id=NT_TASKS_DB_ID, 
@@ -25,9 +24,6 @@ def notion_api(notion_info):
 @pytest.mark.parametrize("payload", [
     # Test with tasks database
     (notion_payloads.create_task(TEST_TASK)),
-
-    # Test with notes database
-    (notion_payloads.create_task_note(TEST_TASK)),
 
     # Test with stats database
     (notion_payloads.update_stats_row(TEST_STAT, new_row=True)),
@@ -92,10 +88,6 @@ def test_query_with_multiple_pages(notion_api, query, expected_pages):
 @pytest.mark.parametrize("page_id, stable_property, updated_property, payload", [
     # Test with tasks database
     (EXISTING_TEST_TASK_PAGE_ID, "Note", "Focus time",
-     json.dumps({"properties": {"Focus time": {"number": random.random()}}})),
-
-    # Test with tasks database
-    (EXISTING_TEST_TASK_NOTE_PAGE_ID, "Note", "Focus time",
      json.dumps({"properties": {"Focus time": {"number": random.random()}}})),
 
     # Test with stats database

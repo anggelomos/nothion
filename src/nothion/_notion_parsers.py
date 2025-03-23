@@ -1,7 +1,7 @@
 from tickthon import Task
 
 from nothion._notion_table_headers import StatsHeaders, TasksHeaders
-from nothion.personal_stats_model import PersonalStats
+from nothion.data_models.personal_stats import PersonalStats
 
 
 class NotionParsers:

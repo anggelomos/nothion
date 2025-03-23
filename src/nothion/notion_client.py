@@ -1,13 +1,14 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from tickthon import Task, ExpenseLog
+from tickthon import Task
 
 from nothion import PersonalStats
 from nothion._config import NT_TASKS_DB_ID, NT_STATS_DB_ID, NT_NOTES_DB_ID, NT_EXPENSES_DB_ID
 from nothion._notion_parsers import NotionParsers
 from nothion._notion_payloads import NotionPayloads
 from nothion._notion_api import NotionAPI
+from nothion.data_models.expense_log import ExpenseLog
 
 
 class NotionClient:
