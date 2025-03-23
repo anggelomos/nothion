@@ -186,21 +186,17 @@ class NotionPayloads:
             }
         }
 
+        stats_fields = [header for header in StatsHeaders if header != StatsHeaders.DATE]
         if new_row or overwrite_stats:
-            payload["properties"].update({
-                StatsHeaders.FOCUS_TOTAL_TIME.value: {"number": stat.focus_total_time},
-                StatsHeaders.FOCUS_ACTIVE_TIME.value: {"number": stat.focus_active_time},
-                StatsHeaders.WORK_TIME.value: {"number": stat.work_time},
-                StatsHeaders.LEISURE_TIME.value: {"number": stat.leisure_time},
-                StatsHeaders.SLEEP_TIME_AMOUNT.value: {"number": stat.sleep_time_amount},
-                StatsHeaders.FALL_ASLEEP_TIME.value: {"number": stat.fall_asleep_time},
-                StatsHeaders.SLEEP_SCORE.value: {"number": stat.sleep_score},
-                StatsHeaders.WEIGHT.value: {"number": stat.weight},
-                StatsHeaders.STEPS.value: {"number": stat.steps},
-                StatsHeaders.WATER_CUPS.value: {"number": stat.water_cups},
-            })
+
+            for header in stats_fields:
+                attr_name = header.name.lower()
+                new_value = getattr(stat, attr_name, None)
+
+                if new_value is not None:
+                    payload["properties"][header.value] = {"number": new_value}
+
         elif old_stats:
-            stats_fields = [header for header in StatsHeaders if header != StatsHeaders.DATE]
 
             for header in stats_fields:
                 attr_name = header.name.lower()

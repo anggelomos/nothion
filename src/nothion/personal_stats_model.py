@@ -10,13 +10,13 @@ class PersonalStats:
         all other attributes are self-explanatory.
     """
     date: str
-    focus_total_time: float
-    focus_active_time: float
-    work_time: float
-    leisure_time: float
-    sleep_time_amount: float = 0.0
-    fall_asleep_time: float = 0.0
-    sleep_score: float = 0.0
-    weight: float = 0.0
-    steps: float = 0.0
-    water_cups: int = 0
+    focus_total_time: float | None
+    focus_active_time: float | None
+    work_time: float | None
+    leisure_time: float | None
+    sleep_time_amount: float | None = 0.0
+    fall_asleep_time: float | None = 0.0
+    sleep_score: float | None = 0.0
+    weight: float | None = 0.0
+    steps: float | None = 0.0
+    water_cups: int | None = None
