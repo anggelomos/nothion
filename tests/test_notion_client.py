@@ -5,19 +5,22 @@ from uuid import uuid4
 
 import pytest
 from nothion import NotionClient, PersonalStats
-from nothion._config import NT_STATS_DB_ID, NT_NOTES_DB_ID
 from tickthon import Task
 
 from nothion._notion_parsers import NotionParsers
 from nothion._notion_payloads import NotionPayloads
 from nothion._notion_table_headers import ExpensesHeaders, StatsHeaders, NotesHeaders
 from nothion.data_models.expense_log import ExpenseLog
-from tests.conftest import EXISTING_TEST_JOURNAL_PAGE_ID
+from .conftest import NT_EXPENSES_DB_ID, NT_STATS_DB_ID, NT_TASKS_DB_ID, NT_NOTES_DB_ID
 
 
 @pytest.fixture(scope="module")
 def notion_client(notion_info):
-    return NotionClient(notion_info["auth_secret"])
+    return NotionClient(notion_info["auth_secret"],
+                        tasks_db_id=NT_TASKS_DB_ID,
+                        stats_db_id=NT_STATS_DB_ID,
+                        expenses_db_id=NT_EXPENSES_DB_ID,
+                        notes_db_id=NT_NOTES_DB_ID)
 
 
 def test_get_active_tasks(notion_client):
@@ -212,7 +215,7 @@ def test_create_stats_row(notion_client):
 
     notion_client.stats.update(stats, overwrite_stats=True)
 
-    date_row = notion_client.notion_api.query_table(NT_STATS_DB_ID, NotionPayloads.get_date_rows("9999-09-09"))[0]
+    date_row = notion_client.notion_api.query_table(notion_client.stats_db_id, NotionPayloads.get_date_rows("9999-09-09"))[0]
     date_row_properties = date_row["properties"]
     assert date_row_properties[StatsHeaders.DATE.value]["date"]["start"] == stats.date
     assert date_row_properties[StatsHeaders.FOCUS_TOTAL_TIME.value]["number"] == stats.focus_total_time
@@ -298,7 +301,7 @@ def test_create_note_page(notion_client):
     notion_client.notes.create_page(*note_page)
 
     note_page_payload = NotionPayloads.get_note_page(note_page[0], note_page[1])
-    created_note_page = notion_client.notion_api.query_table(NT_NOTES_DB_ID, note_page_payload)[0]
+    created_note_page = notion_client.notion_api.query_table(notion_client.notes_db_id, note_page_payload)[0]
     page_properties = created_note_page["properties"]
 
     assert page_properties[NotesHeaders.NOTE.value]["title"][0]["plain_text"] == note_page[0]

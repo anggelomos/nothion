@@ -3,12 +3,12 @@ import random
 from typing import List, Dict
 
 import pytest
-from nothion._config import NT_TASKS_DB_ID, NT_NOTES_DB_ID, NT_STATS_DB_ID, NT_EXPENSES_DB_ID
 
 from nothion._notion_api import NotionAPI
 from nothion._notion_payloads import NotionPayloads
-from .conftest import (TEST_TASK, TEST_STAT, TEST_EXPENSE_LOG, EXISTING_TEST_TASK_PAGE_ID,
-                       EXISTING_TEST_STAT_PAGE_ID, EXISTING_TEST_EXPENSE_LOG_PAGE_ID, EXISTING_TEST_JOURNAL_PAGE_ID)
+from .conftest import (NT_TASKS_DB_ID, TEST_TASK, TEST_STAT, TEST_EXPENSE_LOG, EXISTING_TEST_TASK_PAGE_ID,
+                       NT_NOTES_DB_ID, NT_STATS_DB_ID, NT_EXPENSES_DB_ID, EXISTING_TEST_STAT_PAGE_ID,
+                       EXISTING_TEST_EXPENSE_LOG_PAGE_ID, EXISTING_TEST_JOURNAL_PAGE_ID)
 
 
 notion_payloads = NotionPayloads(tasks_db_id=NT_TASKS_DB_ID, 

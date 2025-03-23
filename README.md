@@ -10,7 +10,11 @@ pip install nothion
 ```python
 from nothion import NotionClient
 
-client = NotionClient(auth_secret="your_auth_token")
+client = NotionClient(auth_secret="your_auth_token",
+                      tasks_db_id: str | None = None,
+                      stats_db_id: str | None = None,
+                      notes_db_id: str | None = None,
+                      expenses_db_id: str | None = None)
 client.tasks.get_active_tasks()
 ```
 
@@ -31,37 +35,34 @@ client.tasks.get_active_tasks()
 - create_page(title: str, page_type: str, page_subtype: tuple[str], date: datetime, content: str)
 
 ### Stats Handler
-- get_incomplete_dates(limit_date: datetime)
+- get_incomplete_dates(limit_date: datetime) -> List[str]
 - update(stat_data: PersonalStats, overwrite_stats: bool = False)
-- get_between_dates(start_date: datetime, end_date: datetime)
+- get_between_dates(start_date: datetime, end_date: datetime) -> List[PersonalStats]
 
 ### Expenses Handler
 - add_expense_log(expense_log: ExpenseLog)
 
-## Personal Stats model
-This package uses a custom attrs model to store personal stats, it has the following attributes:
+## Data Models
 
-PersonalStats:
+### PersonalStats
+This package uses a custom attrs model to store personal stats:
+
+- date: str
 - time_stats: TimeStats
 - weight: float
 
-TimeStats:
+#### TimeStats
 - work_time: float
 - leisure_time: float
 - focus_time: float
 
-## ExpenseLog model
-This package uses a custom attrs model to store expense log data, it has the following attributes:
+### ExpenseLog
+This package uses a custom attrs model to store expense log data:
 
-ExpenseLog:
 - fecha: str
 - egresos: float
 - producto: str
 
-## Environment variables
+## Environment Variables
 
 - NT_AUTH: Notion auth token, for example secret_t1CdN9S8yicG5eWLUOfhcWaOscVnFXns.
-- NT_TASKS_DB_ID: Notion tasks database id
-- NT_NOTES_DB_ID: Notion notes database id
-- NT_STATS_DB_ID: Notion stats database id
-- NT_EXPENSES_DB_ID: Notion expenses database id

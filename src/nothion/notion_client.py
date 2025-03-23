@@ -4,7 +4,6 @@ from typing import List, Optional
 from tickthon import Task
 
 from nothion import PersonalStats
-from nothion._config import NT_TASKS_DB_ID, NT_STATS_DB_ID, NT_NOTES_DB_ID, NT_EXPENSES_DB_ID
 from nothion._notion_parsers import NotionParsers
 from nothion._notion_payloads import NotionPayloads
 from nothion._notion_api import NotionAPI
@@ -15,17 +14,17 @@ class NotionClient:
 
     def __init__(self,
                  auth_secret: str,
-                 tasks_db_id: str | None = None,
-                 stats_db_id: str | None = None,
-                 notes_db_id: str | None = None,
-                 expenses_db_id: str | None = None):
+                 tasks_db_id: str = "",
+                 stats_db_id: str = "",
+                 notes_db_id: str = "",
+                 expenses_db_id: str = ""):
         self.notion_api = NotionAPI(auth_secret)
         self.active_tasks: List[Task] = []
 
-        self.tasks_db_id = tasks_db_id or NT_TASKS_DB_ID
-        self.stats_db_id = stats_db_id or NT_STATS_DB_ID
-        self.notes_db_id = notes_db_id or NT_NOTES_DB_ID
-        self.expenses_db_id = expenses_db_id or NT_EXPENSES_DB_ID
+        self.tasks_db_id = tasks_db_id
+        self.stats_db_id = stats_db_id
+        self.notes_db_id = notes_db_id
+        self.expenses_db_id = expenses_db_id
 
         self.notion_payloads = NotionPayloads(
             tasks_db_id=self.tasks_db_id,
