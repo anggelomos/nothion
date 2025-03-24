@@ -29,6 +29,7 @@ class StatsHeaders(Enum):
     WORK_TIME = "ftr - focus time rescuetime"
     LEISURE_TIME = "lt - leisure time"
     SLEEP_TIME_AMOUNT = "sa - sleep amount"
+    SLEEP_DEEP_AMOUNT = "sda - sleep deep amount"
     FALL_ASLEEP_TIME = "st - fall asleep time"
     SLEEP_SCORE = "ss - sleep score"
     WEIGHT = "kg - weight"

@@ -223,6 +223,7 @@ def test_create_stats_row(notion_client):
     assert date_row_properties[StatsHeaders.WORK_TIME.value]["number"] == stats.work_time
     assert date_row_properties[StatsHeaders.LEISURE_TIME.value]["number"] == stats.leisure_time
     assert date_row_properties[StatsHeaders.SLEEP_TIME_AMOUNT.value]["number"] == stats.sleep_time_amount
+    assert date_row_properties[StatsHeaders.SLEEP_DEEP_AMOUNT.value]["number"] == stats.sleep_deep_amount
     assert date_row_properties[StatsHeaders.FALL_ASLEEP_TIME.value]["number"] == stats.fall_asleep_time
     assert date_row_properties[StatsHeaders.SLEEP_SCORE.value]["number"] == stats.sleep_score
     assert date_row_properties[StatsHeaders.WEIGHT.value]["number"] == stats.weight

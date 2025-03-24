@@ -95,6 +95,7 @@ class NotionParsers:
                         work_time=cls._get_number(row_properties, StatsHeaders.WORK_TIME.value),
                         leisure_time=cls._get_number(row_properties, StatsHeaders.LEISURE_TIME.value),
                         sleep_time_amount=cls._get_number(row_properties, StatsHeaders.SLEEP_TIME_AMOUNT.value),
+                        sleep_deep_amount=cls._get_number(row_properties, StatsHeaders.SLEEP_DEEP_AMOUNT.value),
                         fall_asleep_time=cls._get_number(row_properties, StatsHeaders.FALL_ASLEEP_TIME.value),
                         sleep_score=cls._get_number(row_properties, StatsHeaders.SLEEP_SCORE.value),
                         weight=cls._get_number(row_properties, StatsHeaders.WEIGHT.value),
