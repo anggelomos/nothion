@@ -24,12 +24,11 @@ dependencies = [
     "attrs"
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest",
-    "pytest-cov",
-    "twine",
-    "flake8",
-    "mypy",
-    "types-requests"
-]
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+pytest-cov = "^6.2.1"
+twine = "^6.1.0"
+flake8 = "^7.3.0"
+mypy = "^1.16.1"
+ruff = "^0.12.3"
+types-requests = "^2.32.4.20250611"
