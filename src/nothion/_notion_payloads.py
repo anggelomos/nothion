@@ -18,15 +18,17 @@ class NotionPayloads:
 
     @staticmethod
     def get_active_tasks() -> dict:
+        tag_values = ["work-project", "dwtask", "swtask", "personal-project", "dtask", "stask", "wørk-focus-meeting"]
+
         return {
             "filter": {
-                "and": [
+                "or": [
                     {
-                        "property": TasksHeaders.DONE.value,
-                        "checkbox": {
-                            "equals": False
+                        "property": "Tag",
+                        "multi_select": {
+                            "contains": tag
                         }
-                    }
+                    } for tag in tag_values
                 ]
             }
         }
@@ -39,17 +41,14 @@ class NotionPayloads:
                 "title": {"title": [{"text": {"content": task.title}}]},
                 TasksHeaders.FOCUS_TIME.value: {"number": task.focus_time},
                 TasksHeaders.TAGS.value: {"multi_select": list(map(lambda tag: {"name": tag}, task.tags))},
-                TasksHeaders.TICKTICK_ID.value: {"rich_text": [{"text": {"content": task.ticktick_id}}]},
                 TasksHeaders.COLUMN_ID.value: {"rich_text": [{"text": {"content": task.column_id}}]},
                 TasksHeaders.PROJECT_ID.value: {"rich_text": [{"text": {"content": task.project_id}}]},
-                TasksHeaders.TICKTICK_ETAG.value: {"rich_text": [{"text": {"content": task.ticktick_etag}}]},
                 TasksHeaders.CREATED_DATE.value: {"date": {"start": task.created_date}},
-                TasksHeaders.TIMEZONE.value: {"rich_text": [{"text": {"content": task.timezone}}]},
             }
         }
 
         if task.due_date:
-            payload["properties"][TasksHeaders.DUE_DATE.value] = {"date": {"start": task.due_date}}
+            payload["properties"][TasksHeaders.DATE.value] = {"date": {"start": task.due_date}}
 
         return payload
 
@@ -80,16 +79,14 @@ class NotionPayloads:
         Args:
             task: The task to search for.
         """
-        ticktick_etag = task.ticktick_etag if task.ticktick_etag else "no-etag-found"
-        ticktick_id = task.ticktick_id if task.ticktick_id else "no-ticktick-id-found"
-        payload = {"sorts": [{"property": TasksHeaders.DUE_DATE.value, "direction": "ascending"}],
-                   "filter": {
-                       "or": [{"property": TasksHeaders.TICKTICK_ETAG.value,
-                               "rich_text": {"equals": ticktick_etag}},
-                              {"property": TasksHeaders.TICKTICK_ID.value,
-                               "rich_text": {"equals": ticktick_id}}
-                              ]}
-                   }
+        payload = {
+            "sorts": [{"property": TasksHeaders.DATE.value, "direction": "ascending"}],
+            "filter": {
+                "and": [
+                    {"property": TasksHeaders.TITLE.value, "rich_text": {"equals": task.title}}
+                ]
+            }
+        }
 
         return payload
 

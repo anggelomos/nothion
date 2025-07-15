@@ -8,17 +8,14 @@ class ExpensesHeaders(Enum):
 
 
 class TasksHeaders(Enum):
-    DONE = "Done"
-    NOTE = "Note"
+    DONE = "Checkbox"
+    TITLE = "Title"
     FOCUS_TIME = "Focus time"
-    DUE_DATE = "Due date"
-    CREATED_DATE = "Created date"
-    TAGS = "Tags"
-    TICKTICK_ID = "Ticktick id"
+    DATE = "Date"
+    CREATED_DATE = "Created time"
+    TAGS = "Tag"
+    PROJECT_ID = "List id"
     COLUMN_ID = "Column id"
-    TICKTICK_ETAG = "Ticktick etag"
-    PROJECT_ID = "Project id"
-    TIMEZONE = "Timezone"
 
 
 class StatsHeaders(Enum):

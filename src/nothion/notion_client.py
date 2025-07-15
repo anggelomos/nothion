@@ -51,7 +51,7 @@ class NotionClient:
             self.client.active_tasks = notion_tasks
             return notion_tasks
 
-        def get_notion_task(self, ticktick_task: Task) -> Optional[Task]:
+        def get_task(self, ticktick_task: Task) -> Optional[Task]:
             """Gets the task from Notion that have the given ticktick etag."""
             payload = self.client.notion_payloads.get_notion_task(ticktick_task)
             raw_tasks = self.client.notion_api.query_table(self.client.tasks_db_id, payload)
@@ -68,7 +68,7 @@ class NotionClient:
 
             return raw_tasks[0]["id"].replace("-", "")
 
-        def is_already_created(self, task: Task) -> bool:
+        def is_task_already_created(self, task: Task) -> bool:
             """Checks if a task is already created in Notion."""
             payload = self.client.notion_payloads.get_notion_task(task)
             raw_tasks = self.client.notion_api.query_table(self.client.tasks_db_id, payload)
@@ -78,11 +78,11 @@ class NotionClient:
             """Creates a task in Notion."""
             payload = self.client.notion_payloads.create_task(task)
 
-            if not self.is_already_created(task):
+            if not self.is_task_already_created(task):
                 return self.client.notion_api.create_table_entry(payload)
             return None
 
-        def update(self, task: Task):
+        def updat_task(self, task: Task):
             """Updates a task in Notion."""
             page_id = self.get_notion_id(task)
             payload = self.client.notion_payloads.update_task(task)
