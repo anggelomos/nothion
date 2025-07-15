@@ -19,8 +19,18 @@ class NotionParsers:
     def _get_date(properties: dict, field: str) -> str:
         """Extracts start date from date field."""
         try:
-            date_field = properties[field]["date"]
-            return date_field["start"] if date_field else ""
+            date_field = properties[field]
+
+            if date_field.get("date"):
+                parsed_date = date_field["date"]["start"]
+            elif date_field.get("created_time"):
+                parsed_date = date_field["created_time"].split("T")[0]
+            elif date_field.get("last_edited_time"):
+                parsed_date = date_field["last_edited_time"].split("T")[0]
+            else:
+                parsed_date = ""
+
+            return parsed_date
         except KeyError:
             return ""
 
@@ -58,19 +68,18 @@ class NotionParsers:
                 task_properties = raw_task["properties"]
 
                 parsed_tasks.append(Task(
-                    title=cls._get_title(task_properties, TasksHeaders.NOTE.value),
+                    title=cls._get_title(task_properties, TasksHeaders.TITLE.value),
                     status=2 if task_properties.get(TasksHeaders.DONE.value, {}).get("checkbox", False) else 0,
-                    ticktick_id=cls._get_rich_text(task_properties, TasksHeaders.TICKTICK_ID.value),
+                    ticktick_id="",
+                    ticktick_etag="",
                     column_id=cls._get_rich_text(task_properties, TasksHeaders.COLUMN_ID.value),
-                    ticktick_etag=cls._get_rich_text(task_properties, TasksHeaders.TICKTICK_ETAG.value),
                     created_date=cls._get_date(task_properties, TasksHeaders.CREATED_DATE.value),
                     focus_time=cls._get_number(task_properties, TasksHeaders.FOCUS_TIME.value),
                     deleted=int(raw_task.get("archived", False)),
                     tags=tuple(tag["name"] for tag in
                                task_properties.get(TasksHeaders.TAGS.value, {}).get("multi_select", [])),
                     project_id=cls._get_rich_text(task_properties, TasksHeaders.PROJECT_ID.value),
-                    timezone=cls._get_rich_text(task_properties, TasksHeaders.TIMEZONE.value),
-                    due_date=cls._get_date(task_properties, TasksHeaders.DUE_DATE.value)
+                    due_date=cls._get_date(task_properties, TasksHeaders.DATE.value)
                 ))
             except Exception as e:
                 print(f"Error parsing task: {e}")

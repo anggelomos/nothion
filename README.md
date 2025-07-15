@@ -22,11 +22,11 @@ client.tasks.get_active_tasks()
 
 ### Tasks Handler
 - get_active_tasks()
-- get_notion_task(ticktick_task: Task)
+- get_task(ticktick_task: Task)
 - get_notion_id(ticktick_task: Task)
-- is_already_created(task: Task)
+- is_task_already_created(task: Task)
 - create(task: Task)
-- update(task: Task)
+- updat_task(task: Task)
 - complete(task: Task)
 - delete(task: Task)
 
@@ -42,27 +42,34 @@ client.tasks.get_active_tasks()
 ### Expenses Handler
 - add_expense_log(expense_log: ExpenseLog)
 
+### Blocks Handler
+- get_all_children(block_id: str) -> list
+
 ## Data Models
 
 ### PersonalStats
 This package uses a custom attrs model to store personal stats:
 
 - date: str
-- time_stats: TimeStats
-- weight: float
-
-#### TimeStats
-- work_time: float
-- leisure_time: float
-- focus_time: float
+- focus_total_time: float | None
+- focus_active_time: float | None  
+- work_time: float | None
+- leisure_time: float | None
+- sleep_time_amount: float | None
+- sleep_deep_amount: float | None
+- fall_asleep_time: float | None
+- sleep_score: float | None
+- weight: float | None
+- steps: float | None
+- water_cups: int | None
 
 ### ExpenseLog
 This package uses a custom attrs model to store expense log data:
 
-- fecha: str
-- egresos: float
-- producto: str
+- date: str
+- expense: float
+- product: str
 
 ## Environment Variables
 
-- NT_AUTH: Notion auth token, for example secret_t1CdN9S8yicG5eWLUOfhcWaOscVnFXns.
+- NT_AUTH: Notion auth token, for example secret_t1Cd...

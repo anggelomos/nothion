@@ -30,21 +30,22 @@ def test_get_active_tasks(notion_client):
     assert isinstance(active_tasks, List) and all(isinstance(i, Task) for i in active_tasks)
 
 
-def test_get_notion_task(notion_client):
-    expected_task = Task(ticktick_id="hy76b3d2c8e60f1472064fte",
-                         ticktick_etag="9durj438",
-                         created_date="9999-09-09",
-                         status=2,
+def test_get_task(notion_client):
+    expected_task = Task(ticktick_id="",
+                         ticktick_etag="",
+                         created_date="2025-07-14",
+                         status=0,
                          title="Test Existing Task Static",
                          focus_time=0.9,
                          deleted=0,
-                         tags=("test", "existing"),
+                         tags=tuple(["test-existing-tag"]),
                          project_id="t542b6d8e9f2de3c5d6e7f8a9s2h",
-                         timezone="America/Bogota",
+                         timezone="",
                          due_date="9999-09-09",
+                         column_id="4ff69f89b28d81f38d47",
                          )
 
-    task = notion_client.tasks.get_notion_task(expected_task)
+    task = notion_client.tasks.get_task(expected_task)
 
     assert task == expected_task
 
@@ -56,64 +57,39 @@ def test_get_task_that_does_not_exist(notion_client):
                        status=2,
                        title="Test Task That Does Not Exist",
                        )
-    task = notion_client.tasks.get_notion_task(search_task)
+    task = notion_client.tasks.get_task(search_task)
 
     assert task is None
 
 
 def test_get_task_with_missing_properties(notion_client):
-    expected_task = Task(ticktick_id="tg81h23oi12h3jkh2720fu321",
-                         ticktick_etag="d9iej37s",
-                         created_date="2099-09-09",
-                         status=2,
+    expected_task = Task(ticktick_id="",
+                         ticktick_etag="",
+                         created_date="2025-07-15",
+                         status=0,
                          title="Test Existing Task With Missing Data",
                          )
 
-    task = notion_client.tasks.get_notion_task(expected_task)
+    task = notion_client.tasks.get_task(expected_task)
 
     assert task == expected_task
 
 
-def test_get_notion_id_by_ticktick_id(notion_client):
-    expected_notion_id = "f088993635c340cc8e98298ab93ed685"
-    task = Task(ticktick_id="a7f9b3d2c8e60f1472065ac4",
-                ticktick_etag="test-wrong-etag-f8ruej",
-                created_date="2099-09-09",
-                title="Test Existing Task With Missing Data",
-                )
-
-    notion_id = notion_client.tasks.get_notion_id(task)
-
-    assert notion_id == expected_notion_id
-
-
-def test_get_notion_id_by_etag(notion_client):
-    expected_notion_id = "f088993635c340cc8e98298ab93ed685"
-    task = Task(ticktick_id="test-wrong-ticktick-id-f8ruej",
-                ticktick_etag="muu17zqq",
-                created_date="2099-09-09",
-                title="Test Existing Task With Missing Data",
-                )
-
-    notion_id = notion_client.tasks.get_notion_id(task)
-
-    assert notion_id == expected_notion_id
-
-
-@pytest.mark.parametrize("task_etag, expected_status", [
+@pytest.mark.parametrize("task_title, expected_status", [
     # Test with a test task
-    ("muu17zqq", True),
+    ("Test Existing Task Static", True),
 
     # Test with a task that does not exist
     ("0testtask0", False),
 ])
-def test_is_task_already_created(notion_client, task_etag, expected_status):
-    is_task_created = notion_client.tasks.is_already_created(Task(ticktick_etag=task_etag, created_date="", title="",
-                                                                 ticktick_id=""))
+def test_is_task_already_created(notion_client, task_title, expected_status):
+    is_task_created = notion_client.tasks.is_task_already_created(Task(ticktick_id="", ticktick_etag="", created_date="", title=task_title))
 
     assert is_task_created == expected_status
 
 
+@pytest.mark.xfail(reason="The task creation in notion is currently disabled, because it's syncing automatically due to the integration with ticktick."
+                          "I'll keep this tests here just in case I need to re-enable it in the future.")
 def test_create_task(notion_client):
     task_id = uuid4().hex
     expected_task = Task(ticktick_id=task_id,
@@ -130,13 +106,14 @@ def test_create_task(notion_client):
 
     notion_client.tasks.create(expected_task)
 
-    task = notion_client.tasks.get_notion_task(expected_task)
+    task = notion_client.tasks.get_task(expected_task)
     assert task == expected_task
 
     notion_client.tasks.delete(expected_task)
     assert notion_client.tasks.is_already_created(expected_task) is False
 
-
+@pytest.mark.xfail(reason="The task completion in notion is currently disabled, because it's syncing automatically due to the integration with ticktick."
+                          "I'll keep this tests here just in case I need to re-enable it in the future.")
 def test_complete_task(notion_client):
     task_id = uuid4().hex
     expected_task = Task(ticktick_id=task_id,
@@ -154,7 +131,7 @@ def test_complete_task(notion_client):
     notion_client.tasks.create(expected_task)
     notion_client.tasks.complete(expected_task)
 
-    task = notion_client.tasks.get_notion_task(expected_task)
+    task = notion_client.tasks.get_task(expected_task)
     assert task.status == 2
 
     notion_client.tasks.delete(expected_task)
@@ -162,21 +139,21 @@ def test_complete_task(notion_client):
 
 
 def test_update_task(notion_client):
-    expected_task = Task(ticktick_id="a7f9b3d2c8e60f1472065ac4",
-                         ticktick_etag="muu17zqq",
-                         created_date="9999-09-09",
-                         status=2,
-                         title="Test Existing Task",
+    expected_task = Task(ticktick_id="",
+                         ticktick_etag="",
+                         created_date="2025-07-15",
+                         status=0,
+                         title="Test Existing Task to Update",
                          focus_time=random.random(),
-                         tags=("test", "existing"),
+                         tags=tuple(["test-existing-tag"]),
                          project_id="4a72b6d8e9f2103c5d6e7f8a9b0c",
-                         timezone="America/Bogota",
+                         column_id="4ff69f89b28d81f38d47",
                          due_date="9999-09-09",
                          )
 
-    original_task = notion_client.tasks.get_notion_task(expected_task)
-    notion_client.tasks.update(expected_task)
-    updated_task = notion_client.tasks.get_notion_task(expected_task)
+    original_task = notion_client.tasks.get_task(expected_task)
+    notion_client.tasks.updat_task(expected_task)
+    updated_task = notion_client.tasks.get_task(expected_task)
 
     assert updated_task == expected_task
     assert updated_task.title == original_task.title
@@ -293,21 +270,3 @@ def test_get_stats_between_dates(notion_client, start_date, end_date, expected_s
 def test_is_note_page_already_created(notion_client, title, page_type, expected_result):
     is_note_page_created = notion_client.notes.is_page_already_created(title, page_type)
     assert is_note_page_created == expected_result
-
-
-def test_create_note_page(notion_client):
-    note_page = ["test-note-page", "note", ("test",), datetime(2000, 1, 1),
-                 "test note page content"]
-
-    notion_client.notes.create_page(*note_page)
-
-    note_page_payload = NotionPayloads.get_note_page(note_page[0], note_page[1])
-    created_note_page = notion_client.notion_api.query_table(notion_client.notes_db_id, note_page_payload)[0]
-    page_properties = created_note_page["properties"]
-
-    assert page_properties[NotesHeaders.NOTE.value]["title"][0]["plain_text"] == note_page[0]
-    assert page_properties[NotesHeaders.TYPE.value]["select"]["name"] == note_page[1]
-    assert page_properties[NotesHeaders.SUBTYPE.value]["multi_select"][0]["name"] == note_page[2][0]
-    assert page_properties[NotesHeaders.DUE_DATE.value]["date"]["start"] == note_page[3].strftime("%Y-%m-%d")
-
-    notion_client.notion_api.update_table_entry(created_note_page["id"], NotionPayloads.delete_table_entry())

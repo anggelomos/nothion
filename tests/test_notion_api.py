@@ -42,12 +42,12 @@ def test_create_table_entry(notion_api, payload):
 @pytest.mark.parametrize("database_id, query, expected_property, expected_value", [
     # Test with tasks database
     (NT_TASKS_DB_ID,
-     {"filter": {"and": [{"property": "Ticktick id", "rich_text": {"equals": "a7f9b3d2c8e60f1472065ac4"}}]}},
-     "id", "f0889936-35c3-40cc-8e98-298ab93ed685"),
+     {"filter":{"and":[{"property":"Title","title":{"equals":"Test Existing Task Static"}}]}},
+     "id", "23041ab9-8366-810b-9cfe-dae0f672e9b1"),
 
     # Test with tasks database
     (NT_NOTES_DB_ID,
-     {"filter": {"and": [{"property": "Ticktick id", "rich_text": {"equals": "a7f9b3d2c8e60f1472065ac4"}}]}},
+     {"filter": {"and": [{"property": "Note", "title": {"equals": "Test Existing Task"}}]}},
      "id", "c964714a-6fd8-474a-ba60-bb215c5ce77b"),
 
     # Test with stats database
