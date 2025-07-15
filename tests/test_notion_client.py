@@ -152,7 +152,7 @@ def test_update_task(notion_client):
                          )
 
     original_task = notion_client.tasks.get_task(expected_task)
-    notion_client.tasks.updat_task(expected_task)
+    notion_client.tasks.update_task(expected_task)
     updated_task = notion_client.tasks.get_task(expected_task)
 
     assert updated_task == expected_task

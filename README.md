@@ -26,7 +26,7 @@ client.tasks.get_active_tasks()
 - get_notion_id(ticktick_task: Task)
 - is_task_already_created(task: Task)
 - create(task: Task)
-- updat_task(task: Task)
+- update_task(task: Task)
 - complete(task: Task)
 - delete(task: Task)
 

@@ -82,7 +82,7 @@ class NotionClient:
                 return self.client.notion_api.create_table_entry(payload)
             return None
 
-        def updat_task(self, task: Task):
+        def update_task(self, task: Task):
             """Updates a task in Notion."""
             page_id = self.get_notion_id(task)
             payload = self.client.notion_payloads.update_task(task)
