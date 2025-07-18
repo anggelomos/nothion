@@ -59,7 +59,15 @@ class NotionPayloads:
 
     @classmethod
     def update_task(cls, task: Task) -> str:
-        return json.dumps(cls._base_task_payload(task))
+        payload = {
+            "properties": {
+                TasksHeaders.FOCUS_TIME.value: {"number": task.focus_time},
+                TasksHeaders.COLUMN_ID.value: {"rich_text": [{"text": {"content": task.column_id}}]},
+                TasksHeaders.PROJECT_ID.value: {"rich_text": [{"text": {"content": task.project_id}}]},
+            }
+        }
+
+        return json.dumps(payload)
 
     @classmethod
     def complete_task(cls) -> str:

@@ -9,7 +9,7 @@ from tickthon import Task
 
 from nothion._notion_parsers import NotionParsers
 from nothion._notion_payloads import NotionPayloads
-from nothion._notion_table_headers import ExpensesHeaders, StatsHeaders, NotesHeaders
+from nothion._notion_table_headers import ExpensesHeaders, StatsHeaders
 from nothion.data_models.expense_log import ExpenseLog
 from .conftest import NT_EXPENSES_DB_ID, NT_STATS_DB_ID, NT_TASKS_DB_ID, NT_NOTES_DB_ID
 

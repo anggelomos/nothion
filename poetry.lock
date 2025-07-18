@@ -438,6 +438,25 @@ pycodestyle = ">=2.14.0,<2.15.0"
 pyflakes = ">=3.4.0,<3.5.0"
 
 [[package]]
+name = "flake8-todos"
+version = "0.3.1"
+description = "Python linter to check TODO comments for consistency and best practice."
+optional = false
+python-versions = ">=3.8"
+groups = ["dev"]
+files = [
+    {file = "flake8_todos-0.3.1-py3-none-any.whl", hash = "sha256:0b4faca80bec49be7bf8e5dd46eec12f619e09cecac8a84a87775272300222b2"},
+    {file = "flake8_todos-0.3.1.tar.gz", hash = "sha256:942101a08f831d7d9f7d864d86169f3bcfaf8b6d56a004c0280eb51725266b16"},
+]
+
+[package.dependencies]
+flake8 = "*"
+pycodestyle = "*"
+
+[package.extras]
+dev = ["isort[pyproject]", "pytest"]
+
+[[package]]
 name = "id"
 version = "1.5.0"
 description = "A tool for generating OIDC identities"
@@ -1252,4 +1271,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "dd5c089ebaf432c176f02a06d40c1911a51ece53cb7a09324bc79805c86eda14"
+content-hash = "d45ca5ac8bb2c8f6528d57d8ab03eda45c027115a534498921d0eb2a0f73254c"
