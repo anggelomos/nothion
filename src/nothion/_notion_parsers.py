@@ -100,7 +100,8 @@ class NotionParsers:
                     PersonalStats(
                         date=cls._get_date(row_properties, StatsHeaders.DATE.value),
                         focus_total_time=cls._get_number(row_properties, StatsHeaders.FOCUS_TOTAL_TIME.value),
-                        focus_active_time=cls._get_number(row_properties, StatsHeaders.FOCUS_ACTIVE_TIME.value),
+                        focus_personal_time=cls._get_number(row_properties, StatsHeaders.FOCUS_PERSONAL_TIME.value),
+                        focus_work_time=cls._get_number(row_properties, StatsHeaders.FOCUS_WORK_TIME.value),
                         work_time=cls._get_number(row_properties, StatsHeaders.WORK_TIME.value),
                         leisure_time=cls._get_number(row_properties, StatsHeaders.LEISURE_TIME.value),
                         sleep_time_amount=cls._get_number(row_properties, StatsHeaders.SLEEP_TIME_AMOUNT.value),

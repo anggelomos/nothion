@@ -186,7 +186,7 @@ def test_get_incomplete_stats_dates(notion_client):
 
 
 def test_create_stats_row(notion_client):
-    stats = PersonalStats(date="9999-09-09", focus_total_time=1.0, focus_active_time=2.0, work_time=3.0,
+    stats = PersonalStats(date="9999-09-09", focus_total_time=1.0, focus_work_time=3.0, focus_personal_time=1.0, work_time=3.0,
                           leisure_time=4.0, sleep_time_amount=5.0, fall_asleep_time=6.0, sleep_score=7.0,
                           weight=8.0, steps=9.0, water_cups=10)
 
@@ -196,7 +196,8 @@ def test_create_stats_row(notion_client):
     date_row_properties = date_row["properties"]
     assert date_row_properties[StatsHeaders.DATE.value]["date"]["start"] == stats.date
     assert date_row_properties[StatsHeaders.FOCUS_TOTAL_TIME.value]["number"] == stats.focus_total_time
-    assert date_row_properties[StatsHeaders.FOCUS_ACTIVE_TIME.value]["number"] == stats.focus_active_time
+    assert date_row_properties[StatsHeaders.FOCUS_PERSONAL_TIME.value]["number"] == stats.focus_personal_time
+    assert date_row_properties[StatsHeaders.FOCUS_WORK_TIME.value]["number"] == stats.focus_work_time
     assert date_row_properties[StatsHeaders.WORK_TIME.value]["number"] == stats.work_time
     assert date_row_properties[StatsHeaders.LEISURE_TIME.value]["number"] == stats.leisure_time
     assert date_row_properties[StatsHeaders.SLEEP_TIME_AMOUNT.value]["number"] == stats.sleep_time_amount
@@ -215,7 +216,8 @@ def test_update_stats_row(notion_client):
     notion_api = notion_client.notion_api
     expected_stat = PersonalStats(date="1999-09-09",
                                   focus_total_time=random.random(),
-                                  focus_active_time=4.5,
+                                  focus_personal_time=4.5,
+                                  focus_work_time=5.5,
                                   work_time=1.2,
                                   fall_asleep_time=3,
                                   sleep_time_amount=4,
@@ -238,13 +240,13 @@ def test_update_stats_row(notion_client):
 @pytest.mark.parametrize("start_date, end_date, expected_stats", [
     # Test start date before end date
     (date(2023, 1, 1), date(2023, 1, 3),
-     [PersonalStats(date='2023-01-01', work_time=2.03, leisure_time=6.5, focus_total_time=0, focus_active_time=1.97, weight=0, water_cups=0),
-      PersonalStats(date='2023-01-02', work_time=3.24, leisure_time=3.24, focus_total_time=3.12, focus_active_time=3.12, weight=0, water_cups=0),
-      PersonalStats(date='2023-01-03', work_time=7.57, leisure_time=1.51, focus_total_time=6.33, focus_active_time=7.42, weight=0, water_cups=0)]),
+     [PersonalStats(date='2023-01-01', work_time=2.03, leisure_time=6.5, focus_total_time=0, focus_work_time=1.97, focus_personal_time=1.23, weight=0, water_cups=0),
+      PersonalStats(date='2023-01-02', work_time=3.24, leisure_time=3.24, focus_total_time=3.12, focus_work_time=3.12, focus_personal_time=0.45, weight=0, water_cups=0),
+      PersonalStats(date='2023-01-03', work_time=7.57, leisure_time=1.51, focus_total_time=6.33, focus_work_time=7.42, focus_personal_time=2.07, weight=0, water_cups=0)]),
 
     # Test start date equal to end date
     (date(2023, 1, 1), date(2023, 1, 1),
-     [PersonalStats(date='2023-01-01', work_time=2.03, leisure_time=6.5, focus_total_time=0, focus_active_time=1.97, weight=0, water_cups=0)]),
+     [PersonalStats(date='2023-01-01', work_time=2.03, leisure_time=6.5, focus_total_time=0, focus_work_time=1.97, focus_personal_time=1.23, weight=0, water_cups=0)]),
 
     # Test start date after end date
     (date(2023, 1, 3), date(2023, 1, 1), []),

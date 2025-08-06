@@ -91,8 +91,8 @@ def test_query_with_multiple_pages(notion_api, query, expected_pages):
      json.dumps({"properties": {"Focus time": {"number": random.random()}}})),
 
     # Test with stats database
-    (EXISTING_TEST_STAT_PAGE_ID, "ftr - focus time rescuetime", "fta - focus time active",
-     json.dumps({"properties": {"fta - focus time active": {"number": random.random()}}})),
+    (EXISTING_TEST_STAT_PAGE_ID, "ftr - focus time rescuetime", "ftw - focus time work",
+     json.dumps({"properties": {"ftw - focus time work": {"number": random.random()}}})),
 
     # Test with expenses database
     (EXISTING_TEST_EXPENSE_LOG_PAGE_ID, "item", "expense",

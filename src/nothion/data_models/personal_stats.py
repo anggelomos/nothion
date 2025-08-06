@@ -11,7 +11,8 @@ class PersonalStats:
     """
     date: str
     focus_total_time: float | None
-    focus_active_time: float | None
+    focus_personal_time: float | None
+    focus_work_time: float | None
     work_time: float | None
     leisure_time: float | None
     sleep_time_amount: float | None = 0.0
