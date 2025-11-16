@@ -17,6 +17,7 @@ class PersonalStats:
     leisure_time: float | None
     sleep_time_amount: float | None = 0.0
     sleep_deep_amount: float | None = 0.0
+    sleep_rem_amount: float | None = 0.0
     fall_asleep_time: float | None = 0.0
     sleep_score: float | None = 0.0
     weight: float | None = 0.0
